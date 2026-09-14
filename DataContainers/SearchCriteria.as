@@ -44,7 +44,7 @@ class SearchCriteria {
             }
             else if (json.HasKey("map_ids")) {
                 array<string> id_list = JsonToStringArray(json["map_ids"]);
-                this.map_ids = string::Join(id_list, ",");
+                this.map_ids = Text::Join(id_list, ",");
             }
             this.name = json.Get("name", "");
             this.uploaded_after = json.Get("uploaded_after", "");
