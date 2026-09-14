@@ -38,6 +38,9 @@ const array<string> TITLEPACKS = {
     "TMStadium",
     "TMValley",
     "TMLagoon",
+    "TMOneBay",
+    "TMOneSpeed",
+    "TMOneAlpine",
     "Unassigned"//MP3 canyon and stadium maps?
 };
 
