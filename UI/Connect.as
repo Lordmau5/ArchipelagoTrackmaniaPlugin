@@ -15,12 +15,6 @@ void RenderConnectUI(){
             EndConnectUI();
             return;
         }
-#elif MP4
-        if (CurrentTitlePack().Length <= 0){
-            UI::Text("Please Enter a Titlepack!");
-            EndConnectUI();
-            return;
-        }
 #endif
 
         if (!socket.NotDisconnected()){

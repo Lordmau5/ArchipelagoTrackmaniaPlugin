@@ -31,37 +31,35 @@ void RenderMainMenu(){
                 UI::Indent(indent);
                 if (data.world[i].IsUnlocked() && data.world[i].initialized){
                     for (int j = 0; j < data.world[i].mapCount; j++){
-
-                        auto startPos = UI::GetCursorPos() + UI::GetWindowPos() -
-                        vec2(8, 8) - vec2(0, UI::GetScrollY());
-
                         UI::BeginGroup();
                         float lineHeight = 100;
                         MapState@ map = data.world[i].maps[j];
 
                         vec2 cursorStart = UI::GetCursorPos();
                         float width  = viewSize.x-30;
-                        float height = 30;
-                        float verticalOffset = -2;
-                        vec2 starPos = UI::GetCursorPos() + vec2(-22,verticalOffset)  +UI::GetWindowPos() - vec2(0, UI::GetScrollY())+ vec2(viewSize.x/2,0.0);
+                        float height = 48;
+                        float verticalOffset = -6;
+                        vec2 startPos = UI::GetCursorPos() + vec2(-22,verticalOffset)  +UI::GetWindowPos() - vec2(0, UI::GetScrollY())+ vec2(viewSize.x/2,0.0);
                         vec2 endPos = UI::GetCursorPos() + vec2(-22,height+verticalOffset) +UI::GetWindowPos() - vec2(0, UI::GetScrollY())+ vec2(viewSize.x/2,0.0);
-                        vec4 bgRect = vec4(starPos.x - (width/2),starPos.y,width,endPos.y - starPos.y);
+                        vec4 bgRect = vec4(startPos.x - (width/2),startPos.y,width,endPos.y - startPos.y);
 
                         if (map.mapIndex % 2 == 1){
                             UI::GetWindowDrawList().AddRectFilled(bgRect, vec4(1,1,1,0.04), 5);
                         }
-                        //number
+
+                        // Series Number
                         string number = "";
                         if (j < 9) number = "0";
                         number += (""+(j+1));
                         UI::PushFont(fontTime);
                         UI::Text(number);
                         UI::PopFont();
-                        //title
+
+                        // Map Name
                         UI::PushFont(fontHeaderSub);
                         UI::PushFontSize(16);
                         UI::SameLine();
-                        MoveCursor(vec2(0,6));
+                        MoveCursor(vec2(0,-4));
                         string mapName = map.mapInfo.Name;
                         if (mapName.Length > 35){
                             mapName = mapName.SubStr(0,32)+"...";
@@ -69,17 +67,16 @@ void RenderMainMenu(){
                         UI::Text(mapName);
                         UI::PopFontSize();
                         UI::PopFont();
-                        //author
-                        UI::SameLine();
-                        MoveCursor(vec2(-4,10));
+
+                        // Author and Titlepack
+                        MoveCursor(vec2(60, -16));
                         UI::PushStyleColor(UI::Col::Text, vec4(0.7,0.7,0.7,1.0));
                         UI::PushFontSize(12);
-                        UI::Text("by " + map.mapInfo.Username);
+                        UI::Text("by " + map.mapInfo.Username + " / " + map.mapInfo.TitlePack);
                         UI::PopFontSize();
                         UI::PopStyleColor();
 
-                        //UI::SameLine();
-                        MoveCursor(vec2(viewSize.x - 170, -24));
+                        MoveCursor(vec2(viewSize.x - 170, -40));
                         DrawChecksRemaining(map.seriesIndex, map.mapIndex, false);
 
                         UI::Dummy(vec2(0,0));
@@ -94,17 +91,7 @@ void RenderMainMenu(){
                             }
                         }
 
-                        // UI::BeginChild("##Map Name" + j, vec2(cellSize, UI::GetTextLineHeight()));
-                        // UI::Text("Map "+(j+1) /*+ ": " + data.world[i].maps[j].mapInfo.Name*/);
-                        // UI::EndChild();
-
                         UI::EndGroup();
-                        //print(siiize);
-                        // UI::GetWindowDrawList().AddRectFilled(siiize, vec4(1,1,1,0.5),5);
-
-                        auto size = UI::GetCursorPos() + UI::GetWindowPos() + vec2(0, 8) - startPos -vec2(0, UI::GetScrollY());
-                        vec4 rect = vec4(startPos.x, startPos.y, 50, size.y);
-                        //UI::GetWindowDrawList().AddRectFilled(rect, vec4(.0, .6, .6, 0.1));
 
                         if (UI::IsItemHovered()){
                             RenderTooltip2(data.world[i].maps[j]);

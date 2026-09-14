@@ -101,10 +101,8 @@ class SearchCriteria {
         params.Set("count", "1");
         params.Set("maptype", SUPPORTED_MAP_TYPE);
 #if MP4
-        string titlepack = CurrentTitlePack();
-        if (titlepack == "TMAll"){
-            titlepack = TITLEPACKS[Math::Rand(0,TITLEPACKS.Length)];
-        }
+        auto installedTitlePacks = GetInstalledTitlePacks(TITLEPACKS);
+        string titlepack = installedTitlePacks[Math::Rand(0, installedTitlePacks.Length)];
         params.Set("titlepack", titlepack);
 #endif
 

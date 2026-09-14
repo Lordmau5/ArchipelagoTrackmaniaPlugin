@@ -1,6 +1,66 @@
 bool isQueryingForMap = false;
 bool isNextMapLoading = false;
 
+namespace MX
+{
+    const dictionary ModesFromMapType = {
+#if MP4
+        // ManiaPlanet
+        { "Race",                     "" }, // Base ManiaPlanet Map Type
+        { "TrackMania\\Race",         "" },
+        { "Platform",                 "" },
+        { "Stunts",                   "" },
+        { "GoalHuntArena",            "GoalHunt" },
+        { "HuntersArena",             "Hunters" },
+        { "PursuitArena",             "Pursuit" },
+        { "TMOne\\PlatformOneArena",  "" },
+        { "EW Stunts - Score Attack", "ExtraWorldSolo" },
+        { "EW Race - Time Attack",    "ExtraWorldSolo"}
+#elif TMNEXT
+        { "TM_Race",                  "" },
+        { "TM_Stunt",                 "TrackMania/TM_StuntSolo_Local" },
+        { "TM_Platform",              "TrackMania/TM_Platform_Local" },
+        { "TM_Royal",                 "TrackMania/TM_RoyalTimeAttack_Local" }
+#endif
+    };
+
+    const dictionary ModesFromTitlePack = {
+#if MP4
+        // Base title packs
+        { "TMCanyon",        "SingleMap" },
+        { "TMStadium",       "SingleMap" },
+        { "TMValley",        "SingleMap" },
+        { "TMLagoon",        "SingleMap" },
+
+        // Envimix
+        { "TMAll",           "SingleMap" },
+        { "Envimix_Turbo",   "EnvimixSolo" },
+        { "Nadeo_Envimix",   "EnvimixSolo" },
+
+        // Environments recreations
+        // TMOne's script doesn't work outside campaigns
+        // { "TMOneAlpine",     "Unbitn/TMOne/TimeAttackOne" },
+        // { "TMOneSpeed",      "Unbitn/TMOne/TimeAttackOne" },
+        { "TMOneBay",        "Unbitn/TMOne/TimeAttackOne" },
+        { "TM2Rally",        "GlobalSolo" },
+        { "TM2U_Island",     "SoloUni" },
+        { "TM2_Coast",       "CoastSolo" },
+
+        // Gamemodes recreations
+        { "Platform",        "PlatformSolo" },
+        { "ExtraWorld",      "ExtraWorldSolo" },
+        { "ModePlus",        "GlobalSolo" },
+
+        // Competition
+        { "esl_comp",        "SingleMap" },
+
+        // Other
+        { "TMPlus_Canyon",   "SingleMap" },
+        { "TMPlus_Lagoon",   "SingleMap" }
+#endif
+    };
+}
+
 void LoadMapByIndex(int seriesIndex, int mapIndex){
     @loadedMap = data.GetMap(seriesIndex, mapIndex);
     if (loadedMap !is null){
@@ -35,15 +95,26 @@ void LoadMap(ref@ mapData){
     }
 #endif
     try {
-        isNextMapLoading = true;
-
         MapInfo@ map = cast<MapInfo@>(mapData);
 
-        if (map is null ){
+        if (map is null) {
             warn ("Error, tried to load null map");
-            isNextMapLoading = false;
             return;
         }
+
+        if (!IsCurrentTitlepackCompatible(map.TitlePack))
+        {
+            LoadTitlePack(map.TitlePack);
+            yield();
+        }
+
+        if (!IsCurrentTitlepackCompatible(map.TitlePack))
+        {
+            Log::Error("Could not load title pack.", true);
+            return;
+        }
+
+        isNextMapLoading = true;
 
         Log::LoadingMapNotification(map);
 
@@ -56,7 +127,17 @@ void LoadMap(ref@ mapData){
             yield(); // Wait until the ManiaTitleControlScriptAPI is ready for loading the next map
         }
 
-        app.ManiaTitleControlScriptAPI.PlayMap("https://"+ MX_URL+"/mapgbx/"+map.MapId, SUPPORTED_GAME_MODE, "");
+        string Mode = "";
+        MX::ModesFromMapType.Get(map.MapType, Mode);
+
+#if MP4
+        if (Mode == "") {
+            const string loadedTP = CurrentTitlePack();
+            MX::ModesFromTitlePack.Get(loadedTP, Mode);
+        }
+#endif
+
+        app.ManiaTitleControlScriptAPI.PlayMap("https://"+ MX_URL+"/mapgbx/"+map.MapId, Mode, "");
 
         isNextMapLoading = false;
     }

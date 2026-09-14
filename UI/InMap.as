@@ -134,6 +134,7 @@ void RenderMapUI(){
         if (UI::ButtonColored(Icons::Map + " Back to Map Selection!", 0.66)){
             ClosePauseMenu();
             BackToMainMenu();
+            startnew(BackToStationsMenu);
         }
     }
     UI::End();
