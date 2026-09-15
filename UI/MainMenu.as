@@ -96,8 +96,11 @@ void RenderMainMenu(){
                         if (UI::IsItemHovered()){
                             RenderTooltip2(data.world[i].maps[j]);
                         }
-                        if(UI::IsItemClicked()){
+                        if(UI::IsItemClicked(UI::MouseButton::Left)){
                             LoadMapByIndex(i,j);
+                        }
+                        if(UI::IsItemClicked(UI::MouseButton::Right)){
+                            RerollMapFromUI(i, j);
                         }
                     }
                 }else if (!data.world[i].IsUnlocked()){
@@ -261,8 +264,11 @@ void RenderMainMenuThumbnail(){
                         if (UI::IsItemHovered()){
                             RenderTooltip(data.world[i].maps[j]);
                         }
-                        if(UI::IsItemClicked()){
+                        if(UI::IsItemClicked(UI::MouseButton::Left)){
                             LoadMapByIndex(i,j);
+                        }
+                        if(UI::IsItemClicked(UI::MouseButton::Right)){
+                            RerollMapFromUI(i, j);
                         }
                     }
                     UI::EndTable();

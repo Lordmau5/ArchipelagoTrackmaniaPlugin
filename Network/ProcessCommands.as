@@ -187,14 +187,21 @@ void ProcessRoomUpdate (Json::Value@ json){
 }
 
 void ProcessReroll (Json::Value@ json){
-    if (json["series_index"] !is null 
+    RerollMapInfo@ rerollMapInfo;
+
+    if (json["series_index"] !is null
         && json["map_index"] !is null
         && int(json["series_index"]) >= 1
-        && int(json["map_index"]) >= 1){
-        RerollMap(int(json["series_index"])-1, int(json["map_index"])-1); 
-    }else if (loadedMap !is null && loadedMap.mapInfo.MapUid == GetLoadedMapUid()){
-        RerollMap(loadedMap.seriesIndex, loadedMap.mapIndex);   
+        && int(json["map_index"]) >= 1)
+    {
+        rerollMapInfo = GetRerollMapInfo(int(json["series_index"]) - 1, int(json["map_index"]) - 1);
     }
+    else if (loadedMap !is null && loadedMap.mapInfo.MapUid == GetLoadedMapUid())
+    {
+        rerollMapInfo = GetRerollMapInfo(loadedMap.seriesIndex, loadedMap.mapIndex);
+    }
+
+    RerollMap(rerollMapInfo);
 }
 
 // array<string> FormatStringList(const string &in bla){
