@@ -16,7 +16,7 @@ class SearchCriteria {
     int map_pack;
     int min_length;
     int max_length; // By default, always set to 5 minutes in slot_data (see also: MAX_AUTHOR_TIME)
-    bool has_award;
+    int min_award_count;
     bool in_totd;
     bool has_replay;
 
@@ -53,7 +53,7 @@ class SearchCriteria {
             this.map_pack = json.Get("map_pack", 0);
             this.min_length = json.Get("min_length", 0);
             this.max_length = json.Get("max_length", 0);
-            this.has_award = JsonGetAsBool(json, "has_award");
+            this.min_award_count = json.Get("min_award_count", 0);
             this.in_totd = JsonGetAsBool(json, "in_totd");
             this.has_replay = JsonGetAsBool(json, "has_replay");
         }
@@ -81,7 +81,7 @@ class SearchCriteria {
             json["map_pack"] = this.map_pack;
             json["min_length"] = this.min_length;
             json["max_length"] = this.max_length;
-            json["has_award"] = this.has_award;
+            json["min_award_count"] = this.min_award_count;
             json["in_totd"] = this.in_totd;
             json["has_replay"] = this.has_replay;
         }
@@ -112,6 +112,7 @@ class SearchCriteria {
         if (!this.forceSafeURL) {
             params.Set("etag", this.map_etags);
             params.Set("difficulty", this.difficulties);
+
             if (this.map_tags_inclusive)
                 params.Set("taginclusive", "true");
 
@@ -120,18 +121,25 @@ class SearchCriteria {
             params.Set("name", this.name);
             params.Set("uploadedafter", this.uploaded_after);
             params.Set("uploadedbefore", this.uploaded_before);
+
             if (this.author > 0)
                 params.Set("authoruserid", tostring(this.author));
+
             if (this.map_pack > 0)
                 params.Set("mappackid", tostring(this.map_pack));
+
             if (this.min_length > 0)
                 params.Set("authortimemin", tostring(this.min_length));
+
             if (this.max_length > 0)
                 params.Set("authortimemax", tostring(this.max_length));
-            if (this.has_award)
-                params.Set("inlatestawardedauthor", "1");  
+
+            if (this.min_award_count > 0)
+                params.Set("awardsmin", tostring(this.min_award_count));
+
             if (this.in_totd)
-                params.Set("intotd", "1");              
+                params.Set("intotd", "1");
+
             if (this.has_replay)
                 params.Set("inhasreplay", "1");
         }
