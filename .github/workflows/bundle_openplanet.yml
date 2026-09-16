@@ -1,0 +1,24 @@
+name: Bundle Openplanet Plugin
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Bundle into ArchipelagoPlugin.op
+      run: |
+        # Zip repository contents, excluding hidden git/github files
+        zip -r ArchipelagoPlugin.op . -x "*.git*" "*.github*"
+
+    - name: Upload .op artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ArchipelagoPlugin
+        path: ArchipelagoPlugin.op

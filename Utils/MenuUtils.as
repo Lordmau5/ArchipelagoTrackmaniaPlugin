@@ -32,6 +32,35 @@ bool IsCurrentTitlepackCompatible(const string &in titlePack) {
     return loadedTitlePack == titlePack;
 }
 
+#if MP4
+dictionary environmentMap = {
+    {"Canyon",  "TMCanyon"},
+    {"Stadium", "TMStadium"},
+    {"Valley",  "TMValley"},
+    {"Lagoon",  "TMLagoon"},
+    {"Desert",  "TMOneSpeed"},
+    {"Snow",    "TMOneAlpine"},
+    {"Bay",     "TMOneBay"},
+    {"Island",  "TM2U_Island"},
+    {"Mix",     "TMAll"}
+};
+
+array<string> NormalizeTitlePackNames(const array<string>& in titlePacks) {
+    array<string> normalizedTitlePacks;
+
+    for (uint i = 0; i < titlePacks.Length; i++)
+    {
+        string pack = titlePacks[i];
+        if (environmentMap.Exists(pack))
+        {
+            normalizedTitlePacks.InsertLast(string(environmentMap[pack]));
+        }
+    }
+
+    return normalizedTitlePacks;
+}
+#endif
+
 array<string> GetInstalledTitlePacks(const array<string>& in targetPacks) {
     array<string> installedPacks;
     CTrackMania@ app = cast<CTrackMania>(GetApp());

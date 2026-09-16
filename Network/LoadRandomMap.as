@@ -61,29 +61,56 @@ namespace MX
     };
 }
 
+class RerollMapInfo
+{
+    int seriesIndex;
+    int mapIndex;
+}
+
+RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex)
+{
+    RerollMapInfo@ info = RerollMapInfo();
+    info.seriesIndex = seriesIndex;
+    info.mapIndex = mapIndex;
+
+    return info;
+}
+
+void RerollMapFromUI(int seriesIndex, int mapIndex)
+{
+    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex));
+}
+
+void RerollMap(ref@ rerollMapInfo){
+    RerollMapInfo@ info = cast<RerollMapInfo@>(rerollMapInfo);
+    if (info is null) return;
+
+    int seriesIndex = info.seriesIndex;
+    int mapIndex = info.mapIndex;
+
+    if (seriesIndex < 0 || uint(seriesIndex) >= data.world.Length) return;
+    if (mapIndex < 0 || uint(mapIndex) >= data.world[seriesIndex].maps.Length) return;
+    Log::Log("Rerolling Series " + (seriesIndex+1) + " Map " + (mapIndex+1) + ", one second please!", true);
+    
+    MapState@ mapState = data.world[seriesIndex].maps[mapIndex];
+    SearchCriteria@ URLBuilder = data.world[seriesIndex].searchBuilder;
+    MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
+    if (mapRoll is null) {
+        Log::Error("Unable to reroll map", true);
+        return;
+    }
+
+    mapState.ReplaceMap(mapRoll);
+    if (loadedMap !is null && loadedMap.seriesIndex == seriesIndex && loadedMap.mapIndex == mapIndex) {
+        startnew(LoadMap, mapRoll);
+    }
+}
+
 void LoadMapByIndex(int seriesIndex, int mapIndex){
     @loadedMap = data.GetMap(seriesIndex, mapIndex);
     if (loadedMap !is null){
         MapInfo@ info = loadedMap.mapInfo;
         startnew(LoadMap,info);
-    }
-}
-
-void RerollMap(int seriesI, int mapI){
-    if (seriesI < 0 || uint(seriesI) >= data.world.Length) return;
-    if (mapI < 0 || uint(mapI) >= data.world[seriesI].maps.Length) return;
-    Log::Log("Rerolling Series " + (seriesI+1) + " Map " + (mapI+1) + ", one second please!", true);
-    MapState@ mapState = data.world[seriesI].maps[mapI];
-
-    SearchCriteria@ URLBuilder = data.world[seriesI].searchBuilder;
-    MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
-    if (mapRoll !is null){
-        mapState.ReplaceMap(mapRoll);
-        if (loadedMap !is null && loadedMap.seriesIndex == seriesI && loadedMap.mapIndex == mapI){
-            startnew(LoadMap,mapRoll);
-        }
-    }else{
-        Log::Error("Unable to reroll map", true);
     }
 }
 

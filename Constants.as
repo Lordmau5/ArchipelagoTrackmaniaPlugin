@@ -10,7 +10,7 @@ const vec4   MX_COLOR_VEC               = vec4(0.2, 0.6, 1, 1);
 const string MX_URL                     = "tm.mania.exchange";
 const string SUPPORTED_MAP_TYPE         = "Race";
 const string SUPPORTED_GAME_MODE        = "SingleMap";
-const string ETAGS						= "20";//kacky
+const string ETAGS						= "20,49"; // Kacky, Base Map
 
 #elif TMNEXT
 
@@ -21,7 +21,7 @@ const vec4   MX_COLOR_VEC               = vec4(0.3, 0.7, 0.4, 1);
 const string MX_URL                     = "trackmania.exchange";
 const string SUPPORTED_MAP_TYPE         = "TM_Race";
 const string SUPPORTED_GAME_MODE        = "";
-const string ETAGS						= "23,37,40,46,47";//Kacky, Royal, Arena, Flagrush, and Puzzle.
+const string ETAGS						= "23,37,40,46,47,71,72";// Kacky, Royal, Arena, Flagrush, Puzzle, Tower, Base Map
 #endif
 
 const int MAX_AUTHOR_TIME	            = 300000;
@@ -33,15 +33,19 @@ const int BASE_TRAP_ID                  = 24050;
 const float DISCOUNT_PERCENT            = .015;
 
 const array<string> TITLEPACKS = {
-    "TMAll",//envimix stuff it seems?
-    "TMCanyon",
-    "TMStadium",
-    "TMValley",
-    "TMLagoon",
-    "TMOneBay",
-    "TMOneSpeed",
-    "TMOneAlpine",
-    "Unassigned"//MP3 canyon and stadium maps?
+    "TMCanyon",     // By Nadeo
+    "TMStadium",    // By Nadeo
+    "TMValley",     // By Nadeo
+    "TMLagoon",     // By Nadeo
+
+    "TMAll",        // By @domino54
+
+    "TMOneBay",     // By @unbitn
+    "TMOneSpeed",   // By @unbitn
+    "TMOneAlpine",  // By @unbitn
+    "TM2U_Island",  // By @adamkooo
+
+    "Unassigned"    // MP3 canyon and stadium maps?
 };
 
 const array<string> MAP_FIELDS_ARRAY = {
@@ -225,7 +229,11 @@ void initTags(){
     TMX_TAGS["Pipes"]            = 65;
     TMX_TAGS["Magnet"]           = 66;
     TMX_TAGS["NoGrip"]           = 67;
-
+    TMX_TAGS["Precision"]        = 68;
+    TMX_TAGS["Clones"]           = 69;
+    TMX_TAGS["Custom Camera"]    = 70;
+    TMX_TAGS["Tower"]            = 71;
+    TMX_TAGS["Base Map"]         = 72;
 #elif MP4
     TMX_TAGS["Race"]             = 1;
     TMX_TAGS["FullSpeed"]        = 2; //called Fullspeed in api
@@ -274,5 +282,7 @@ void initTags(){
     TMX_TAGS["NoSteer"]          = 45;
     TMX_TAGS["Magnet"]           = 46;
     TMX_TAGS["SpeedMapping"]     = 47;
+    TMX_TAGS["Custom Camera"]     = 48;
+    TMX_TAGS["Base Map"]          = 49;
 #endif
 }
