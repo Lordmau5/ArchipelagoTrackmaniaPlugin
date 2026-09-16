@@ -58,6 +58,18 @@ void VPadding(int y, bool sameLine = false) {
     UI::PopStyleVar();
 }
 
+void RightAlign(float elementWidth) {
+    HPadding(int(UI::GetContentRegionAvail().x - elementWidth));
+}
+
+void RightAlignText(const string &in text) {
+    UI::AlignTextToFramePadding();
+    float textWidth = UI::MeasureString(text).x;
+    RightAlign(textWidth);
+
+    UI::Text(text);
+}
+
 void RenderLoadingError(){
 
     //UI::SetNextWindowSize(600, 400, UI::Cond::Always);
@@ -67,7 +79,7 @@ void RenderLoadingError(){
     UI::PushStyleVar(UI::StyleVar::FrameRounding, 8.0);
     int flags = UI::WindowFlags::NoCollapse | UI::WindowFlags::NoDocking | UI::WindowFlags::AlwaysAutoResize;
     if (UI::Begin("Archipelago - Loading", isOpen, flags)){
-        
+
         UI::Text("Assets not loaded :(");
         UI::Text("Please wait or try reloading the plugin.");
         UI::End();
@@ -309,7 +321,7 @@ void DrawChecksRemaining(int seriesI, int mapI, bool showNone = true){
     if (data.locations.GotAllChecks(seriesI, mapI) && showNone){
         render += "None! :D";
     }
-    UI::Text(render);
+    RightAlignText(render);
 }
 
 void DrawTags(MapState@ mapState, bool wrap = true){

@@ -28,55 +28,37 @@ void RenderMainMenu(){
                 UI::PushFont(fontHeader);
                 UI::Text ("Series " + (i+1));
                 UI::PopFont();
-                VPadding(manMarn);
+                VPadding(int(manMarn));
                 UI::Separator();
-                VPadding(manMarn);
+                VPadding(int(manMarn));
                 UI::Indent(indent);
-                if (data.world[i].IsUnlocked() && data.world[i].initialized){
+                if (data.world[i].IsUnlocked() && data.world[i].initialized) {
                     for (int j = 0; j < data.world[i].mapCount; j++){
                         MapState@ map = data.world[i].maps[j];
 
-                        UI::BeginGroup();
+                        UI::PushStyleVar(UI::StyleVar::ChildRounding, 5);
+                        UI::PushStyleVar(UI::StyleVar::WindowPadding, vec2(5));
 
-                        vec2 cursorStart = UI::GetCursorPos();
-                        float width  = (viewSize.x - 30) * scale;
-                        float height = 48 * scale;
-                        float verticalOffset = -6 * scale;
-
-                        vec2 startPos = UI::GetCursorPos() + UI::GetWindowPos()
-                            + vec2(-22, verticalOffset) * scale
-                            - vec2(0, UI::GetScrollY())
-                            + vec2(viewSizeWindow.x / 2, 0.0);
-
-                        vec2 endPos = UI::GetCursorPos() + UI::GetWindowPos()
-                            + (vec2(-22, height + verticalOffset)) * scale
-                            - vec2(0, UI::GetScrollY())
-                            + vec2(viewSizeWindow.x / 2, 0.0);
-
-                        vec4 bgRect = vec4(
-                            startPos.x - (width / 2),
-                            startPos.y,
-                            width,
-                            endPos.y - startPos.y
-                        );
-
-                        if (map.mapIndex % 2 == 1){
-                            UI::GetWindowDrawList().AddRectFilled(bgRect, vec4(1,1,1,0.04), 5);
+                        if (map.skipped) {
+                            UI::PushStyleColor(UI::Col::ChildBg, vec4(0, 0.12, 0.96, 0.15));
+                        } else if (data.locations.GotAllChecks(map.seriesIndex, map.mapIndex)) {
+                            UI::PushStyleColor(UI::Col::ChildBg, vec4(0, 0.96, 0.12, 0.15));
+                        } else if (map.mapIndex % 2 == 1) {
+                            UI::PushStyleColor(UI::Col::ChildBg, vec4(1, 1, 1, 0.04));
                         }
 
+                        UI::BeginChild("Map" + i + "_" + j, vec2(0), UI::ChildFlags::AutoResizeY | UI::ChildFlags::AlwaysUseWindowPadding);
+
                         // Series Number
-                        string number = "";
-                        if (j < 9) number = "0";
-                        number += (""+(j+1));
                         UI::PushFont(fontTime);
-                        UI::Text(number);
+                        UI::Text(Text::Format("%02d", j + 1));
                         UI::PopFont();
 
                         // Map Name
                         UI::SameLine();
                         // HPadding(-4);
 
-                        UI::BeginChild("MapNameAndAuthor" + i + "_" + j, vec2(width, height));
+                        UI::BeginChild("MapNameAndAuthor" + i + "_" + j, vec2(0), UI::ChildFlags::AutoResizeY, UI::WindowFlags::NoBackground);
 
                         UI::PushFont(fontHeaderSub);
                         UI::PushFontSize(16 * scale);
@@ -102,18 +84,13 @@ void RenderMainMenu(){
 
                         UI::EndChild();
 
+                        UI::SameLine();
+                        DrawChecksRemaining(map.seriesIndex, map.mapIndex, false);
+
                         // MoveCursor(vec2(viewSize.x - (170 * scale), -40 * scale));
-                        // DrawChecksRemaining(map.seriesIndex, map.mapIndex, false);
 
                         // UI::Dummy(vec2(0,0));
 
-                        if (data.locations.GotAllChecks(map.seriesIndex, map.mapIndex) || map.skipped){
-                            if (map.skipped){
-                                UI::GetWindowDrawList().AddRectFilled(bgRect, vec4(0,0.12,0.96,0.15), 5);
-                            }else{
-                                UI::GetWindowDrawList().AddRectFilled(bgRect, vec4(0,0.96,0.12,0.15), 5);
-                            }
-                        }
 
                         if (UI::IsItemHovered()){
                             RenderTooltip2(data.world[i].maps[j]);
@@ -125,7 +102,13 @@ void RenderMainMenu(){
                             RerollMapFromUI(i, j);
                         }
 
-                        UI::EndGroup();
+                        UI::EndChild();
+
+                        if (map.mapIndex % 2 == 1 || map.skipped || data.locations.GotAllChecks(map.seriesIndex, map.mapIndex)) {
+                            UI::PopStyleColor();
+                        }
+
+                        UI::PopStyleVar(2);
                     }
                 }else if (!data.world[i].IsUnlocked()){
                     UI::NewLine();
@@ -200,7 +183,7 @@ void RenderMainMenu(){
     }
     UI::End();
     UI::PopStyleVar(4);
-        
+
 }
 
 
@@ -376,7 +359,7 @@ void RenderMainMenuThumbnail(){
     }
     UI::End();
     UI::PopStyleVar(4);
-        
+
 }
 
 void RenderTooltip(MapState@ map){
