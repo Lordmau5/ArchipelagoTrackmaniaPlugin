@@ -65,22 +65,22 @@ class RerollMapInfo
 {
     int seriesIndex;
     int mapIndex;
-    bool onlyCurrentTitlePack;
+    bool isPlaying;
 }
 
-RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex, bool onlyCurrentTitlePack = false)
+RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex, bool isPlaying = false)
 {
     RerollMapInfo@ info = RerollMapInfo();
     info.seriesIndex = seriesIndex;
     info.mapIndex = mapIndex;
-    info.onlyCurrentTitlePack = onlyCurrentTitlePack;
+    info.isPlaying = isPlaying;
 
     return info;
 }
 
-void RerollMapFromUI(int seriesIndex, int mapIndex, bool onlyCurrentTitlePack = false)
+void RerollMapFromUI(int seriesIndex, int mapIndex, bool isPlaying = false)
 {
-    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex, onlyCurrentTitlePack));
+    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex, isPlaying));
 }
 
 void RerollMap(ref@ rerollMapInfo) {
@@ -89,7 +89,7 @@ void RerollMap(ref@ rerollMapInfo) {
 
     int seriesIndex = info.seriesIndex;
     int mapIndex = info.mapIndex;
-    bool onlyCurrentTitlePack = info.onlyCurrentTitlePack;
+    bool isPlaying = info.isPlaying;
 
     if (seriesIndex < 0 || uint(seriesIndex) >= data.world.Length) return;
     if (mapIndex < 0 || uint(mapIndex) >= data.world[seriesIndex].maps.Length) return;
@@ -102,7 +102,7 @@ void RerollMap(ref@ rerollMapInfo) {
     MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
 #elif MP4
     string previous_map_environments = URLBuilder.map_environments;
-    if (onlyCurrentTitlePack)
+    if (isPlaying)
     {
         Log::Log("Only current titlepack");
         URLBuilder.map_environments = CurrentTitlePack();
@@ -111,7 +111,7 @@ void RerollMap(ref@ rerollMapInfo) {
     MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
 
     // Reset to previous environments list
-    if (onlyCurrentTitlePack)
+    if (isPlaying)
     {
         URLBuilder.map_environments = previous_map_environments;
     }
@@ -123,7 +123,9 @@ void RerollMap(ref@ rerollMapInfo) {
     }
 
     mapState.ReplaceMap(mapRoll);
-    if (loadedMap !is null && loadedMap.seriesIndex == seriesIndex && loadedMap.mapIndex == mapIndex) {
+
+    // Only start a new map if we're already playing a map
+    if (isPlaying) {
         startnew(LoadMap, mapRoll);
     }
 }
