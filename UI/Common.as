@@ -44,6 +44,32 @@ nvg::Texture@ authorTexNVGBottom;
 nvg::Texture@ archipelagoTexNVGBottom;
 #endif
 
+void HPadding(int x, bool sameLine = true) {
+    UI::PushStyleVar(UI::StyleVar::ItemSpacing, vec2(0, 0));
+    UI::Dummy(vec2(x, 0));
+    if (sameLine) UI::SameLine();
+    UI::PopStyleVar();
+}
+
+void VPadding(int y, bool sameLine = false) {
+    UI::PushStyleVar(UI::StyleVar::ItemSpacing, vec2(0, 0));
+    UI::Dummy(vec2(0, y));
+    if (sameLine) UI::SameLine();
+    UI::PopStyleVar();
+}
+
+void RightAlign(float elementWidth) {
+    HPadding(int(UI::GetContentRegionAvail().x - elementWidth));
+}
+
+void RightAlignText(const string &in text) {
+    UI::AlignTextToFramePadding();
+    float textWidth = UI::MeasureString(text).x;
+    RightAlign(textWidth);
+
+    UI::Text(text);
+}
+
 void RenderLoadingError(){
 
     //UI::SetNextWindowSize(600, 400, UI::Cond::Always);
@@ -53,7 +79,7 @@ void RenderLoadingError(){
     UI::PushStyleVar(UI::StyleVar::FrameRounding, 8.0);
     int flags = UI::WindowFlags::NoCollapse | UI::WindowFlags::NoDocking | UI::WindowFlags::AlwaysAutoResize;
     if (UI::Begin("Archipelago - Loading", isOpen, flags)){
-        
+
         UI::Text("Assets not loaded :(");
         UI::Text("Please wait or try reloading the plugin.");
         UI::End();
@@ -78,12 +104,14 @@ void RenderInventory(){
     UI::EndTable();
 }
 
-void RenderMedalProgress(UI::Texture@ tex, float size, int count, int total){
-    float texSize = size;
+void RenderMedalProgress(UI::Texture@ tex, float size, int count, int total) {
+    float scale = UI::GetScale() / 1.5;
+    float texSize = size * scale;
     UI::Image(tex,vec2(texSize,texSize));
     UI::SameLine();
     UI::PushFont(fontHeaderSub);
-    MoveCursor(vec2(0.0,texSize*0.5-11));
+    float centeredTextPosition = texSize * 0.5 - (16 * scale);
+    MoveCursor(vec2(0.0, centeredTextPosition));
     UI::Text(""+count+"/"+total);
     UI::PopFont();
 }
@@ -293,7 +321,7 @@ void DrawChecksRemaining(int seriesI, int mapI, bool showNone = true){
     if (data.locations.GotAllChecks(seriesI, mapI) && showNone){
         render += "None! :D";
     }
-    UI::Text(render);
+    RightAlignText(render);
 }
 
 void DrawTags(MapState@ mapState, bool wrap = true){

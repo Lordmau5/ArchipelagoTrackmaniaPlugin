@@ -59,6 +59,25 @@ array<string> NormalizeTitlePackNames(const array<string>& in titlePacks) {
 
     return normalizedTitlePacks;
 }
+
+string GetEnvironmentFromTitlePack(const string& in titlePack) {
+    array<string>@ keys = environmentMap.GetKeys();
+    for (int i = 0; i < keys.Length; i++)
+    {
+        string key = keys[i];
+        string value;
+
+        if (environmentMap.Get(key, value))
+        {
+            if (value == titlePack)
+            {
+                return key;
+            }
+        }
+    }
+
+    return titlePack;
+}
 #endif
 
 array<string> GetInstalledTitlePacks(const array<string>& in targetPacks) {

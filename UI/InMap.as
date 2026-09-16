@@ -99,7 +99,7 @@ void RenderMapUI(){
             UI::EndDisabled();
 
             if(UI::ButtonColored(Icons::Refresh + " Reroll Map", 0.8)){
-                RerollMapFromUI(loadedMap.seriesIndex, loadedMap.mapIndex);
+                RerollMapFromUI(loadedMap.seriesIndex, loadedMap.mapIndex, true);
             }
             UI::Separator();
 

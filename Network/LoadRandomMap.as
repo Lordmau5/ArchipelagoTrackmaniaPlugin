@@ -65,28 +65,31 @@ class RerollMapInfo
 {
     int seriesIndex;
     int mapIndex;
+    bool isPlaying;
 }
 
-RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex)
+RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex, bool isPlaying = false)
 {
     RerollMapInfo@ info = RerollMapInfo();
     info.seriesIndex = seriesIndex;
     info.mapIndex = mapIndex;
+    info.isPlaying = isPlaying;
 
     return info;
 }
 
-void RerollMapFromUI(int seriesIndex, int mapIndex)
+void RerollMapFromUI(int seriesIndex, int mapIndex, bool isPlaying = false)
 {
-    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex));
+    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex, isPlaying));
 }
 
-void RerollMap(ref@ rerollMapInfo){
+void RerollMap(ref@ rerollMapInfo) {
     RerollMapInfo@ info = cast<RerollMapInfo@>(rerollMapInfo);
     if (info is null) return;
 
     int seriesIndex = info.seriesIndex;
     int mapIndex = info.mapIndex;
+    bool isPlaying = info.isPlaying;
 
     if (seriesIndex < 0 || uint(seriesIndex) >= data.world.Length) return;
     if (mapIndex < 0 || uint(mapIndex) >= data.world[seriesIndex].maps.Length) return;
@@ -94,14 +97,35 @@ void RerollMap(ref@ rerollMapInfo){
     
     MapState@ mapState = data.world[seriesIndex].maps[mapIndex];
     SearchCriteria@ URLBuilder = data.world[seriesIndex].searchBuilder;
+
+#if TMNEXT
     MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
+#elif MP4
+    string previous_map_environments = URLBuilder.map_environments;
+    if (isPlaying)
+    {
+        Log::Log("Only current titlepack");
+        URLBuilder.map_environments = CurrentTitlePack();
+    }
+
+    MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
+
+    // Reset to previous environments list
+    if (isPlaying)
+    {
+        URLBuilder.map_environments = previous_map_environments;
+    }
+#endif
+
     if (mapRoll is null) {
         Log::Error("Unable to reroll map", true);
         return;
     }
 
     mapState.ReplaceMap(mapRoll);
-    if (loadedMap !is null && loadedMap.seriesIndex == seriesIndex && loadedMap.mapIndex == mapIndex) {
+
+    // Only start a new map if we're already playing a map
+    if (isPlaying) {
         startnew(LoadMap, mapRoll);
     }
 }
@@ -118,6 +142,12 @@ void LoadMap(ref@ mapData){
 #if TMNEXT
     if (!Permissions::PlayLocalMap()){
         Log::Log("Club Access is required to use this plugin, sorry!", true);
+        return;
+    }
+#elif MP4
+    CTrackMania@ app = cast<CTrackMania>(GetApp());
+    if (app is null || app.ManiaTitles.Length == 0) {
+        Log::Log("No title packs found. Did you connect yet?", true);
         return;
     }
 #endif
