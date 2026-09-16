@@ -105,6 +105,7 @@ void RenderMapUI(){
 
             UI::Text("Checks Left:");
             UI::Indent();
+            UI::SameLine();
             DrawChecksRemaining(loadedMap.seriesIndex, loadedMap.mapIndex);
             UI::Unindent();
             UI::Separator();

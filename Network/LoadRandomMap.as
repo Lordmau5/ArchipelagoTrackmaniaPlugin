@@ -147,7 +147,7 @@ void LoadMap(ref@ mapData){
 #elif MP4
     CTrackMania@ app = cast<CTrackMania>(GetApp());
     if (app is null || app.ManiaTitles.Length == 0) {
-        Log::Log("No title packs found. Did you connect yet?", true);
+        Log::Log("No title packs found. Are you in the stations menu yet?", true);
         return;
     }
 #endif

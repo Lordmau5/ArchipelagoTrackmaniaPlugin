@@ -18,7 +18,7 @@ void RenderConnectUI(){
 #elif MP4
         CTrackMania@ app = cast<CTrackMania>(GetApp());
         if (app is null || app.ManiaTitles.Length == 0) {
-            UI::Text("No title packs found. Did you connect yet?");
+            UI::Text("No title packs found. Are you in the stations menu yet?");
             EndConnectUI();
             return;
         }
