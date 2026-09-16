@@ -13,13 +13,11 @@ void RenderMainMenu(){
         if (data is null){
             UI::Text("Awaiting Server Connection...");
         }else{
-            vec2 viewSize = vec2(600, 700);
-            vec2 viewSizeWindow = viewSize * scale;
+            vec2 viewSize = vec2(600, 700) * scale;
             float manMarn = 4 * scale;
-            float indent = 20 * scale;
             bool seriesInitializing = false;
             UI::PushStyleVar(UI::StyleVar::FramePadding, vec2(4, 8));
-            UI::BeginChild("Serieses", viewSizeWindow);
+            UI::BeginChild("Serieses", viewSize);
             if (!shownBefore){
                 shownBefore = true;
                 UI::SetScrollHereY();
@@ -31,7 +29,6 @@ void RenderMainMenu(){
                 VPadding(int(manMarn));
                 UI::Separator();
                 VPadding(int(manMarn));
-                UI::Indent(indent);
                 if (data.world[i].IsUnlocked() && data.world[i].initialized) {
                     for (int j = 0; j < data.world[i].mapCount; j++){
                         MapState@ map = data.world[i].maps[j];
@@ -56,14 +53,12 @@ void RenderMainMenu(){
 
                         // Map Name
                         UI::SameLine();
-                        // HPadding(-4);
 
                         UI::BeginChild("MapNameAndAuthor" + i + "_" + j, vec2(0), UI::ChildFlags::AutoResizeY, UI::WindowFlags::NoBackground);
 
                         UI::PushFont(fontHeaderSub);
-                        UI::PushFontSize(16 * scale);
+                        UI::PushFontSize(Math::Max(16, Math::Min(16 * scale, 20)));
 
-                        // MoveCursor(vec2(0,-4 * scale));
                         string mapName = map.mapInfo.Name;
                         if (mapName.Length > 35){
                             mapName = mapName.SubStr(0,32)+"...";
@@ -72,25 +67,18 @@ void RenderMainMenu(){
                         UI::PopFontSize();
                         UI::PopFont();
 
+                        UI::SameLine();
+                        DrawChecksRemaining(map.seriesIndex, map.mapIndex, false);
+
                         // Author and Titlepack
-                        // UI::SameLine();
-                        // HPadding(-4, false);
-                        // MoveCursor(vec2(60, -16) * scale);-*
+                        MoveCursor(vec2(0, -20));
                         UI::PushStyleColor(UI::Col::Text, vec4(0.7,0.7,0.7,1.0));
-                        UI::PushFontSize(12 * scale);
+                        UI::PushFontSize(Math::Max(12, Math::Min(12 * scale, 16)));
                         UI::Text("by " + map.mapInfo.Username + " / " + map.mapInfo.TitlePack);
                         UI::PopFontSize();
                         UI::PopStyleColor();
 
                         UI::EndChild();
-
-                        UI::SameLine();
-                        DrawChecksRemaining(map.seriesIndex, map.mapIndex, false);
-
-                        // MoveCursor(vec2(viewSize.x - (170 * scale), -40 * scale));
-
-                        // UI::Dummy(vec2(0,0));
-
 
                         if (UI::IsItemHovered()){
                             RenderTooltip2(data.world[i].maps[j]);
@@ -113,7 +101,7 @@ void RenderMainMenu(){
                 }else if (!data.world[i].IsUnlocked()){
                     UI::NewLine();
                     UI::NewLine();
-                    float center = viewSize.x/2-indent;
+                    float center = viewSize.x / 2;
                     MoveCursor(vec2(center,0));
                     UI::PushStyleColor(UI::Col::Text, vec4(0.52,0.5,0.5,1.0));
                     RenderTextCentered(Icons::Lock, fontHeader, 0);
@@ -135,7 +123,6 @@ void RenderMainMenu(){
                     UI::NewLine();
                     UI::NewLine();
                 }
-                UI::Unindent(indent);
                 MoveCursor(vec2(0,manMarn));
                 UI::Separator();
                 MoveCursor(vec2(0,manMarn));
