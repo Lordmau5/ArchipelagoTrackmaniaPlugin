@@ -15,6 +15,13 @@ void RenderConnectUI(){
             EndConnectUI();
             return;
         }
+#elif MP4
+        CTrackMania@ app = cast<CTrackMania>(GetApp());
+        if (app is null || app.ManiaTitles.Length == 0) {
+            UI::Text("No title packs found. Did you connect yet?");
+            EndConnectUI();
+            return;
+        }
 #endif
 
         if (!socket.NotDisconnected()){

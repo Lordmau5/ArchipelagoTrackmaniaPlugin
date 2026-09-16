@@ -67,9 +67,10 @@ string GetLoadedMapUid(){
     }
 }
 
-string CurrentTitlePack(){
+string CurrentTitlePack() {
     CTrackMania@ app = cast<CTrackMania>(GetApp());
     if (app.LoadedManiaTitle is null) return "";
+
     string titleId = app.LoadedManiaTitle.TitleId;
 #if MP4
     return titleId.SubStr(0, titleId.IndexOf("@"));
