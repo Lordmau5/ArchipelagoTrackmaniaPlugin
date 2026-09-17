@@ -74,12 +74,12 @@ void RightAlign(float elementWidth)
     HPadding(int(UI::GetContentRegionAvail().x - elementWidth));
 }
 
-void RightAlignText(const string &in text)
+void RightAlignText(const string &in text, int offset = 0)
 {
     UI::AlignTextToFramePadding();
     float textWidth = UI::MeasureString(text).x;
 
-    RightAlign(textWidth);
+    RightAlign(textWidth + offset);
 
     UI::Text(text);
 }
@@ -347,7 +347,7 @@ nvg::Texture@ GetNthTex(ItemTypes type)
     }
 #endif
 
-void DrawChecksRemaining(int seriesIndex, int mapIndex, bool showNone = true)
+void DrawChecksRemaining(int seriesIndex, int mapIndex, bool offset = true)
 {
     string render = "";
     
@@ -368,12 +368,24 @@ void DrawChecksRemaining(int seriesIndex, int mapIndex, bool showNone = true)
         }
     }
 
-    if (data.locations.GotAllChecks(seriesIndex, mapIndex) && showNone)
+    RightAlignText(render, offset ? int(34 * UI::GetScale()) : 0);
+}
+
+string GetTagsAsCombinedString(MapState@ mapState)
+{
+    string render = "";
+    MapInfo@ map = mapState.mapInfo;
+
+    for(uint i = 0; i < map.Tags.Length; i++)
     {
-        render += "None! :D";
+        render += map.Tags[i].Name;
+        if (i < map.Tags.Length - 1)
+        {
+            render += ", ";
+        }
     }
 
-    RightAlignText(render);
+    return render;
 }
 
 void DrawTags(MapState@ mapState, bool wrap = true)
@@ -384,7 +396,7 @@ void DrawTags(MapState@ mapState, bool wrap = true)
     for(uint i = 0; i < map.Tags.Length; i++)
     {
         render += map.Tags[i].Name;
-        if (i < map.Tags.Length-1)
+        if (i < map.Tags.Length - 1)
         {
             render += ", ";
         }
@@ -484,4 +496,16 @@ void LoadUIAssets()
 #endif
 
     loadingFinished = true;
+}
+
+string LimitStringLength(const string &in text, int maxLength)
+{
+    string textOut = text;
+
+    if (text.Length > maxLength)
+    {
+        textOut = text.SubStr(0, maxLength - 3) + "...";
+    }
+
+    return textOut;
 }

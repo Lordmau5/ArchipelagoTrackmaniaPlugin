@@ -1,5 +1,6 @@
-bool isQueryingForMap = false;
-bool isNextMapLoading = false;
+bool isQueryingForMap   = false;
+bool isNextMapLoading   = false;
+bool isRerollingMap     = false;
 
 namespace MX
 {
@@ -65,72 +66,69 @@ class RerollMapInfo
 {
     int     seriesIndex;
     int     mapIndex;
-    bool    isPlaying;
 }
 
-RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex, bool isPlaying = false)
+RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex)
 {
     RerollMapInfo@ info = RerollMapInfo();
 
     info.seriesIndex    = seriesIndex;
     info.mapIndex       = mapIndex;
-    info.isPlaying      = isPlaying;
 
     return info;
 }
 
-void RerollMapFromUI(int seriesIndex, int mapIndex, bool isPlaying = false)
+void RerollMapFromUI(int seriesIndex, int mapIndex)
 {
-    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex, isPlaying));
+    isRerollingMap = true;
+
+    startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex));
 }
 
 void RerollMap(ref@ rerollMapInfo)
 {
     RerollMapInfo@ info = cast<RerollMapInfo@>(rerollMapInfo);
-    if (info is null) return;
+    if (info is null)
+    {
+        isRerollingMap = false;
+        return;
+    }
 
     int seriesIndex = info.seriesIndex;
     int mapIndex    = info.mapIndex;
-    bool isPlaying  = info.isPlaying;
 
-    if (seriesIndex < 0 || uint(seriesIndex) >= data.world.Length) return;
+    if (seriesIndex < 0 || uint(seriesIndex) >= data.world.Length)
+    {
+        isRerollingMap = false;
+        return;
+    }
 
-    if (mapIndex < 0 || uint(mapIndex) >= data.world[seriesIndex].maps.Length) return;
+    if (mapIndex < 0 || uint(mapIndex) >= data.world[seriesIndex].maps.Length)
+    {
+        isRerollingMap = false;
+        return;
+    }
 
     Log::Log("Rerolling Series " + (seriesIndex + 1) + ", Map " + (mapIndex + 1) + ". One second please!", true);
     
     MapState@ mapState          = data.world[seriesIndex].maps[mapIndex];
     SearchCriteria@ URLBuilder  = data.world[seriesIndex].searchBuilder;
 
-#if TMNEXT
     MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
-#elif MP4
-    string previous_map_environments = URLBuilder.map_environments;
-    if (isPlaying)
-    {
-        // When we're in a map already only search for the same environment / title pack
-        URLBuilder.map_environments = CurrentTitlePack();
-    }
-
-    MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
-
-    // Reset to previous environments list
-    if (isPlaying)
-    {
-        URLBuilder.map_environments = previous_map_environments;
-    }
-#endif
-
     if (mapRoll is null)
     {
+        isRerollingMap = false;
+
         Log::Error("Unable to reroll map", true);
         return;
     }
 
+    isRerollingMap = false;
+
     mapState.ReplaceMap(mapRoll);
 
     // Only start a new map if we're already playing one
-    if (isPlaying)
+    if (GetIsOnMap())
     {
         startnew(LoadMap, mapRoll);
     }
@@ -144,7 +142,7 @@ void LoadMapByIndex(int seriesIndex, int mapIndex)
     {
         MapInfo@ info = loadedMap.mapInfo;
 
-        startnew(LoadMap,info);
+        startnew(LoadMap, info);
     }
 }
 
@@ -210,7 +208,6 @@ void LoadMap(ref@ mapData)
 #endif
 
         app.ManiaTitleControlScriptAPI.PlayMap("https://" + MX_URL + "/mapgbx/" + map.MapId, Mode, "");
-
         isNextMapLoading = false;
     }
     catch

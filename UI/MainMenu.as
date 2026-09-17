@@ -17,7 +17,7 @@ void RenderMainMenu()
         }
         else
         {
-            vec2 viewSize           = vec2(600, 700) * scale;
+            vec2 viewSize           = vec2(650, 700) * scale;
             float manMarn           = 4 * scale;
             bool seriesInitializing = false;
 
@@ -46,7 +46,8 @@ void RenderMainMenu()
                 {
                     for (int mapIndex = 0; mapIndex < series.mapCount; mapIndex++)
                     {
-                        MapState@ map = series.maps[mapIndex];
+                        MapState@ map       = series.maps[mapIndex];
+                        bool gotAllChecks   = data.locations.GotAllChecks(map.seriesIndex, map.mapIndex);
 
                         UI::PushStyleVar(UI::StyleVar::ChildRounding, 5);
                         UI::PushStyleVar(UI::StyleVar::WindowPadding, vec2(5));
@@ -55,7 +56,7 @@ void RenderMainMenu()
                         {
                             UI::PushStyleColor(UI::Col::ChildBg, vec4(0, 0.12, 0.96, 0.15));
                         }
-                        else if (data.locations.GotAllChecks(map.seriesIndex, map.mapIndex))
+                        else if (gotAllChecks)
                         {
                             UI::PushStyleColor(UI::Col::ChildBg, vec4(0, 0.96, 0.12, 0.15));
                         }
@@ -77,25 +78,40 @@ void RenderMainMenu()
                         UI::BeginChild("MapNameAndAuthor" + seriesIndex + "_" + mapIndex, vec2(0), UI::ChildFlags::AutoResizeY, UI::WindowFlags::NoBackground);
 
                         UI::PushFont(fontHeaderSub);
-                        UI::PushFontSize(Math::Max(16, Math::Min(16 * scale, 20)));
+                        UI::PushFontSize(16);
 
-                        string mapName = map.mapInfo.Name;
-                        if (mapName.Length > 35)
-                        {
-                            mapName = mapName.SubStr(0,32)+"...";
-                        }
+                        string mapName = LimitStringLength(map.mapInfo.Name, 30);
 
                         UI::Text(mapName);
                         UI::PopFontSize();
                         UI::PopFont();
 
                         UI::SameLine();
-                        DrawChecksRemaining(seriesIndex, mapIndex, false);
+                        RightAlign(30 * UI::GetScale());
+
+                        UI::BeginDisabled(isRerollingMap);
+
+                        if(!gotAllChecks && UI::ButtonColored(Icons::Refresh, 0.8) && !isRerollingMap)
+                        {
+                            RerollMapFromUI(seriesIndex, mapIndex);
+                        }
+
+                        UI::EndDisabled();
+
+                        bool rerollHovered = false;
+                        if (UI::IsItemHovered(UI::HoveredFlags::AllowWhenDisabled))
+                        {
+                            rerollHovered = true;
+                            UI::SetTooltip(isRerollingMap ? "Rerolling..." : "Reroll Map");
+                        }
+
+                        UI::SameLine();
+                        DrawChecksRemaining(seriesIndex, mapIndex);
 
                         // Author and Titlepack
                         MoveCursor(vec2(0, -20));
                         UI::PushStyleColor(UI::Col::Text, vec4(0.7, 0.7, 0.7, 1.0));
-                        UI::PushFontSize(Math::Max(12, Math::Min(12 * scale, 16)));
+                        UI::PushFontSize(12);
 
                         string authorAndTitlepack = "by " + map.mapInfo.Username;
 #if MP4
@@ -109,19 +125,14 @@ void RenderMainMenu()
 
                         UI::EndChild();
 
-                        if (UI::IsItemHovered())
+                        if (!rerollHovered && UI::IsItemHovered())
                         {
                             RenderTooltip(map);
                         }
 
-                        if(UI::IsItemClicked(UI::MouseButton::Left))
+                        if(!isNextMapLoading && UI::IsItemClicked(UI::MouseButton::Left))
                         {
                             LoadMapByIndex(seriesIndex, mapIndex);
-                        }
-
-                        if(UI::IsItemClicked(UI::MouseButton::Right))
-                        {
-                            RerollMapFromUI(seriesIndex, mapIndex);
                         }
 
                         UI::EndChild();
@@ -237,9 +248,13 @@ void RenderMainMenu()
 void RenderTooltip(MapState@ map)
 {
     UI::BeginTooltip();
-    
+
+    UI::Text("Map:");
+    UI::SameLine();
+    UI::Text(LimitStringLength(map.mapInfo.Name, 60));
+
     UI::Text("Tags:");
-    UI:: SameLine();
+    UI::SameLine();
     DrawTags(map, false);
 
     UI::Text("Target Time:");

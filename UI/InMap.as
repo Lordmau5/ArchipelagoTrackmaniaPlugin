@@ -124,18 +124,30 @@ void RenderMapUI()
             }
             UI::EndDisabled();
 
+            UI::BeginDisabled(isRerollingMap || IsLoadingScreen());
+
             if(UI::ButtonColored(Icons::Refresh + " Reroll Map", 0.8))
             {
-                RerollMapFromUI(loadedMap.seriesIndex, loadedMap.mapIndex, true);
+                RerollMapFromUI(loadedMap.seriesIndex, loadedMap.mapIndex);
             }
+
+            UI::EndDisabled();
+
             UI::Separator();
 
-            UI::Text("Checks Left:");
-            UI::Indent();
-            UI::SameLine();
-            DrawChecksRemaining(loadedMap.seriesIndex, loadedMap.mapIndex);
-            UI::Unindent();
-            UI::Separator();
+            if (data.locations.GotAllChecks(loadedMap.seriesIndex, loadedMap.mapIndex))
+            {
+                UI::Text("All checks completed!");
+            }
+            else
+            {
+                UI::Text("Checks Left:");
+                UI::Indent();
+                UI::SameLine();
+                DrawChecksRemaining(loadedMap.seriesIndex, loadedMap.mapIndex, false);
+                UI::Unindent();
+                UI::Separator();
+            }
         }
         else
         {
@@ -166,10 +178,14 @@ void RenderMapUI()
             }
         }
 
+        UI::BeginDisabled(IsLoadingScreen());
+
         if (UI::ButtonColored(Icons::Map + " Back to Map Selection!", 0.66))
         {
             startnew(BackToStationsMenu);
         }
+
+        UI::EndDisabled();
     }
 
     UI::End();

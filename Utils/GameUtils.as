@@ -95,6 +95,30 @@ string GetLoadedMapUid()
     }
 }
 
+bool IsLoadingScreen()
+{
+    CTrackMania@ app = cast<CTrackMania>(GetApp());
+    if (app.Network !is null)
+    {
+        auto scriptAPI = app.Network.PlaygroundClientScriptAPI;
+        if (scriptAPI !is null && scriptAPI.IsLoadingScreen)
+        {
+            return true;
+        }
+    }
+
+    auto script = app.PlaygroundScript;
+    if (script is null) return false;
+
+    auto manager = script.UIManager;
+    if (manager !is null && manager.HoldLoadingScreen)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 string CurrentTitlePack()
 {
     CTrackMania@ app = cast<CTrackMania>(GetApp());
