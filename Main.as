@@ -47,7 +47,6 @@ void Render()
             if (GetIsOnMap())
             {
                 RenderMapUI();
-                // DrawPlaygroundUI();
             }
             else
             {
