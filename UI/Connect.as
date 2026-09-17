@@ -1,43 +1,56 @@
 
-void RenderConnectUI(){
-
-    //UI::SetNextWindowSize(600, 400, UI::Cond::Always);
-    UI::PushStyleVar(UI::StyleVar::WindowTitleAlign, vec2(.5, .5));
+void RenderConnectUI()
+{
+    UI::PushStyleVar(UI::StyleVar::WindowTitleAlign, vec2(0.5, 0.5));
     UI::PushStyleVar(UI::StyleVar::WindowPadding, vec2(12, 12));
     UI::PushStyleVar(UI::StyleVar::WindowRounding, 16.0);
     UI::PushStyleVar(UI::StyleVar::FrameRounding, 8.0);
+
     int flags = UI::WindowFlags::NoCollapse | UI::WindowFlags::NoDocking | UI::WindowFlags::AlwaysAutoResize;
-    if (UI::Begin("Archipelago - Connect", isOpen, flags)){
-        
+
+    if (UI::Begin("Archipelago - Connect", isOpen, flags))
+    {
 #if TMNEXT
-        if (!Permissions::PlayLocalMap()){
+        if (!Permissions::PlayLocalMap())
+        {
             UI::Text("Club Access is required to use this plugin, sorry!");
             EndConnectUI();
             return;
         }
 #elif MP4
         CTrackMania@ app = cast<CTrackMania>(GetApp());
-        if (app is null || app.ManiaTitles.Length == 0) {
+        if (app is null || app.ManiaTitles.Length == 0)
+        {
             UI::Text("No title packs found. Are you in the stations menu yet?");
             EndConnectUI();
             return;
         }
 #endif
 
-        if (!socket.NotDisconnected()){
-            if (UI::ButtonColored(	Icons::Kenney::SignIn + " Connect to Archipelago Client!", 0.33)){
+        if (!socket.NotDisconnected())
+        {
+            if (UI::ButtonColored(	Icons::Kenney::SignIn + " Connect to Archipelago Client!", 0.33))
+            {
                 StartConnection();
             }
-            if (Setting_ConnectionOptions){
+
+            if (Setting_ConnectionOptions)
+            {
                 bool changed = false;
                 Setting_ConnectionAddress = UI::InputText("Local Address", Setting_ConnectionAddress, changed);
-                if (changed){
+
+                if (changed)
+                {
                     socket.SetAddress(Setting_ConnectionAddress);
                 }
             }
-        }else{
+        }
+        else
+        {
             UI::Text("Connecting...");
-            if (UI::ButtonColored(Icons::Times+" Cancel", 0.0)){
+
+            if (UI::ButtonColored(Icons::Times + " Cancel", 0.0))
+            {
                 socket.Close();
             }
         }
@@ -45,7 +58,8 @@ void RenderConnectUI(){
     EndConnectUI();
 }
 
-void EndConnectUI(){
+void EndConnectUI()
+{
     UI::End();
     UI::PopStyleVar(4);
 }

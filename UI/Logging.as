@@ -42,7 +42,7 @@ namespace Log
     {
         Log("Loading map: " + map.Name + " (" + map.MapId + ")");
         vec4 color = UI::HSV(0.25, 1, 0.7);
-        UI::ShowNotification(Icons::Kenney::ReloadInverse + " Loading map", map.Name + "\nby: "+map.Username, color, 5000);
+        UI::ShowNotification(Icons::Kenney::ReloadInverse + " Loading map", map.Name + "\nby: " + map.Username, color, 5000);
     }
 
     void ArchipelagoNotification(const string &in message){

@@ -3,21 +3,29 @@
 
 #if TMNEXT
 
-uint FrameConfirmQuit = 0;
-const float stdRatio = 16.0f / 9.0f;
+uint FrameConfirmQuit   = 0;
+const float stdRatio    = 16.0f / 9.0f;
 
-void DrawPlaygroundUI() {
+// TODO: Deprecated - While a nice addition, this code is so hard to maintain
+// plus the benefit out of it is just not worth...
+void DrawPlaygroundUI()
+{
     CTrackMania@ App = cast<CTrackMania@>(GetApp());
 
     NGameLoadProgress_SMgr@ LoadProgress = App.LoadProgress;
     if (LoadProgress !is null && LoadProgress.State != NGameLoadProgress::EState::Disabled)
+    {
         return;
+    }
 
     CDx11Viewport@ Viewport = cast<CDx11Viewport@>(App.Viewport);
     if (Viewport is null || Viewport.Overlays.Length == 0)
+    {
         return;
+    }
 
-    for (int i = Viewport.Overlays.Length - 1; i >= 0; i--) {
+    for (int i = Viewport.Overlays.Length - 1; i >= 0; i--)
+    {
         CHmsZoneOverlay@ Overlay = Viewport.Overlays[i];
         if (false
             || Overlay is null
@@ -26,12 +34,17 @@ void DrawPlaygroundUI() {
             || Overlay.m_CorpusVisibles[0].Item is null
             || Overlay.m_CorpusVisibles[0].Item.SceneMobil is null
         )
+        {
             continue;
+        }
 
         if (FrameConfirmQuit > 0 && FrameConfirmQuit == Overlay.m_CorpusVisibles[0].Item.SceneMobil.Id.Value)
+        {
             return;
+        }
 
-        if (Overlay.m_CorpusVisibles[0].Item.SceneMobil.IdName == "FrameConfirmQuit") {
+        if (Overlay.m_CorpusVisibles[0].Item.SceneMobil.IdName == "FrameConfirmQuit")
+        {
             FrameConfirmQuit = Overlay.m_CorpusVisibles[0].Item.SceneMobil.Id.Value;
             return;
         }
@@ -40,12 +53,14 @@ void DrawPlaygroundUI() {
     CTrackManiaNetwork@ Network = cast<CTrackManiaNetwork@>(App.Network);
     CTrackManiaNetworkServerInfo@ ServerInfo = cast<CTrackManiaNetworkServerInfo@>(Network.ServerInfo);
 
-    if (GetIsOnMap() && data !is null && socket.NotDisconnected()) {
+    if (GetIsOnMap() && data !is null && socket.NotDisconnected())
+    {
         if (false
             || !UI::IsGameUIVisible()
             || loadedMap is null
             || GetLoadedMapUid() != loadedMap.mapInfo.MapUid
-        ){
+        )
+        {
             return;
         }
 
@@ -55,7 +70,9 @@ void DrawPlaygroundUI() {
             || CMAP.UILayers.Length < 23
             || CMAP.UI is null
         )
+        {
             return;
+        }
 
         const bool endSequence = CMAP.UI.UISequence == CGamePlaygroundUIConfig::EUISequence::EndRound;
 
@@ -73,7 +90,8 @@ void DrawPlaygroundUI() {
         CGameManialinkPage@ Pause;
         CGameManialinkPage@ End;
 
-        for (uint i = 0; i < CMAP.UILayers.Length; i++) {
+        for (uint i = 0; i < CMAP.UILayers.Length; i++)
+        {
             const bool pauseDisplayed = Network.PlaygroundClientScriptAPI.IsInGameMenuDisplayed;
 
             if (true
@@ -82,7 +100,9 @@ void DrawPlaygroundUI() {
                 && !(Pause  is null && pauseDisplayed)
                 && !(End    is null /*&& endSequence*/)
             )
+            {
                 break;
+            }
 
             CGameUILayer@ Layer = CMAP.UILayers[i];
             if (false
@@ -94,12 +114,17 @@ void DrawPlaygroundUI() {
                 )
                 || Layer.ManialinkPageUtf8.Length == 0
             )
+            {
                 continue;
+            }
 
             const int start = Layer.ManialinkPageUtf8.IndexOf("<");
             const int end = Layer.ManialinkPageUtf8.IndexOf(">");
             if (start == -1 || end == -1)
+            {
                 continue;
+            }
+
             const string pageName = Layer.ManialinkPageUtf8.SubStr(start, end);
 
             if (true
@@ -107,7 +132,8 @@ void DrawPlaygroundUI() {
                 && ScoresTable is null
                 && Layer.Type == CGameUILayer::EUILayerType::Normal
                 && pageName.Contains("_Race_ScoresTable")
-            ) {
+            )
+            {
                 @ScoresTable = Layer.LocalPage;
                 continue;
             }
@@ -118,7 +144,8 @@ void DrawPlaygroundUI() {
                 && Record is null
                 && Layer.Type == CGameUILayer::EUILayerType::Normal
                 && pageName.Contains("_Race_Record")
-            ) {
+            )
+            {
                 @Record = Layer.LocalPage;
                 continue;
             }
@@ -128,7 +155,8 @@ void DrawPlaygroundUI() {
                 && Start is null
                 && Layer.Type == CGameUILayer::EUILayerType::Normal
                 && pageName.Contains("_StartRaceMenu")
-            ) {
+            )
+            {
                 @Start = Layer.LocalPage;
                 continue;
             }
@@ -137,7 +165,8 @@ void DrawPlaygroundUI() {
                 && Pause is null
                 && Layer.Type == CGameUILayer::EUILayerType::InGameMenu
                 && pageName.Contains("_PauseMenu")
-            ) {
+            )
+            {
                 @Pause = Layer.LocalPage;
                 continue;
             }
@@ -147,11 +176,13 @@ void DrawPlaygroundUI() {
                 && End is null
                 && Layer.Type == CGameUILayer::EUILayerType::Normal
                 && pageName.Contains("_EndRaceMenu")
-            ) {
+            )
+            {
                 @End = Layer.LocalPage;
                 continue;
             }
         }
+
         DrawOverPlaygroundPage(Record, PlaygroundPageType::Record);
         DrawOverPlaygroundPage(Start, PlaygroundPageType::Start);
         DrawOverPlaygroundPage(Pause, PlaygroundPageType::Pause, ScoresTable);
@@ -159,20 +190,26 @@ void DrawPlaygroundUI() {
     }
 }
 
-void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, CGameManialinkPage@ ScoresTable = null) {
-    if (Page is null)
-        return;
+void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, CGameManialinkPage@ ScoresTable = null)
+{
+    if (Page is null) return;
 
-    if (type == PlaygroundPageType::Pause) {
+    if (type == PlaygroundPageType::Pause)
+    {
         CTrackMania@ App = cast<CTrackMania@>(GetApp());
         CTrackManiaNetwork@ Network = cast<CTrackManiaNetwork@>(App.Network);
         if (!Network.PlaygroundClientScriptAPI.IsInGameMenuDisplayed)
+        {
             return;
+        }
 
-        if (ScoresTable !is null) {
+        if (ScoresTable !is null)
+        {
             CGameManialinkFrame@ TableLayer = cast<CGameManialinkFrame@>(ScoresTable.GetFirstChild("frame-scorestable-layer"));
             if (TableLayer !is null && TableLayer.Visible)
+            {
                 return;
+            }
         }
 
         const string[] frames = {
@@ -188,17 +225,24 @@ void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, C
             "popupmultichoice-leave-match"
         };
 
-        for (uint i = 0; i < frames.Length; i++) {
+        for (uint i = 0; i < frames.Length; i++)
+        {
             CGameManialinkFrame@ Frame = cast<CGameManialinkFrame@>(Page.GetFirstChild(frames[i]));
             if (Frame !is null && Frame.Visible)
+            {
                 return;
+            }
         }
-
-    } else {
-        if (type == PlaygroundPageType::Start) {
+    }
+    else
+    {
+        if (type == PlaygroundPageType::Start)
+        {
             CGameManialinkFrame@ OpponentsList = cast<CGameManialinkFrame@>(Page.GetFirstChild("frame-more-opponents-list"));
             if (OpponentsList !is null && OpponentsList.Visible)
+            {
                 return;
+            }
         }
     }
 
@@ -207,15 +251,20 @@ void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, C
     CGameManialinkFrame@ Global = cast<CGameManialinkFrame@>(Page.GetFirstChild("frame-global"));
 
     CGameManialinkControl@ Medal = Page.GetFirstChild(banner ? "quad-medal" : "ComponentMedalStack_frame-global");
-    if (Medal !is null && Medal.Visible && !banner){
+    if (Medal !is null && Medal.Visible && !banner)
+    {
         const bool end = type == PlaygroundPageType::End;
 
         CGameManialinkFrame@ MenuContent;
         if (end)
+        {
             @MenuContent = cast<CGameManialinkFrame@>(Page.GetFirstChild("frame-menu-content"));
+        }
 
-        if (!end || (MenuContent !is null && MenuContent.Visible) || true/*|| IS_DEV_MODE*/) {//I think this got changed in a patch
-            if (Global !is null && Global.Visible){
+        if (!end || (MenuContent !is null && MenuContent.Visible) || true/*|| IS_DEV_MODE*/) //I think this got changed in a patch
+        {
+            if (Global !is null && Global.Visible)
+            {
                 Medal.Parent.Hide();
                 DrawMedals(Medal.AbsolutePosition_V3, type);
             }
@@ -223,17 +272,21 @@ void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, C
     }
 
     //don't render any medals if the page is hidden
-    if (Global is null || Global.Parent is null || !Global.Parent.Visible) return;
+    if (Global is null || Global.Parent is null || !Global.Parent.Visible)
+    {
+        return;
+    }
 
     //TM_PlayMap_Local banner
     CGameManialinkFrame@ MedalBanner = cast<CGameManialinkFrame@>(Page.GetFirstChild("clip-medal-banner"));
-    if (MedalBanner !is null /*&& MedalBanner.Visible*/){
-
+    if (MedalBanner !is null /*&& MedalBanner.Visible*/)
+    {
         CGameManialinkFrame@ FrameBanner = cast<CGameManialinkFrame@>(MedalBanner.GetFirstChild("frame-medal"));
-        if (FrameBanner !is null && FrameBanner.Visible){
-
+        if (FrameBanner !is null && FrameBanner.Visible)
+        {
             CGameManialinkQuad@ QuadMedal = cast<CGameManialinkQuad@>(MedalBanner.GetFirstChild("quad-medal"));
-            if (QuadMedal !is null){
+            if (QuadMedal !is null)
+            {
                 QuadMedal.Opacity = 0.001;
                 DrawBigMedal(QuadMedal.AbsolutePosition_V3, QuadMedal.AbsoluteScale, QuadMedal.ImageUrl);
             }
@@ -242,19 +295,21 @@ void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, C
 
     //TM_PlayMap_Local end race
     CGameManialinkFrame@ MedalCelebration = cast<CGameManialinkFrame@>(Page.GetFirstChild("frame-celebration"));
-    if (MedalCelebration !is null && MedalCelebration.Visible){
-
+    if (MedalCelebration !is null && MedalCelebration.Visible)
+    {
         CGameManialinkFrame@ FrameCelebration = cast<CGameManialinkFrame@>(MedalCelebration.GetFirstChild("frame-celebration-medal"));
-        if (FrameCelebration !is null && FrameCelebration.Visible){
-
+        if (FrameCelebration !is null && FrameCelebration.Visible)
+        {
             CGameManialinkQuad@ QuadMedal = cast<CGameManialinkQuad@>(MedalCelebration.GetFirstChild("quad-medal"));
-            if (QuadMedal !is null){
+            if (QuadMedal !is null)
+            {
                 QuadMedal.Opacity = 0.001;
                 DrawBigMedal(QuadMedal.AbsolutePosition_V3, QuadMedal.AbsoluteScale, QuadMedal.ImageUrl);
             }
 
             CGameManialinkLabel@ QuadLabel = cast<CGameManialinkLabel@>(MedalCelebration.GetFirstChild("label-new-medal"));
-            if (QuadLabel !is null && QuadLabel !is null){
+            if (QuadLabel !is null && QuadLabel !is null)
+            {
                 ReplaceMedalText(QuadLabel, QuadMedal.ImageUrl);
             }
         }
@@ -263,209 +318,225 @@ void DrawOverPlaygroundPage(CGameManialinkPage@ Page, PlaygroundPageType type, C
     //TM_Campaign_Local
     //this is inside _EndRaceMenu
     CGameManialinkFrame@ NewMedal = cast<CGameManialinkFrame@>(Page.GetFirstChild("frame-new-medal"));
-    if (NewMedal !is null && NewMedal.Visible){
-
+    if (NewMedal !is null && NewMedal.Visible)
+    {
         CGameManialinkQuad@ QuadMedalOld = cast<CGameManialinkQuad@>(NewMedal.GetFirstChild("quad-medal"));
-        if (QuadMedalOld !is null && QuadMedalOld.Visible){
+        if (QuadMedalOld !is null && QuadMedalOld.Visible)
+        {
             DrawHugeMedal(QuadMedalOld.AbsolutePosition_V3, QuadMedalOld.AbsoluteScale, QuadMedalOld.ImageUrl);
         }
 
         CGameManialinkQuad@ QuadMedalNew = cast<CGameManialinkQuad@>(NewMedal.GetFirstChild("quad-medal-anim"));
-        if (QuadMedalNew !is null && QuadMedalNew.Visible && QuadMedalNew.ImageUrl.Length > 0 && QuadMedalNew.ImageUrl != QuadMedalOld.ImageUrl){
+        if (QuadMedalNew !is null
+            && QuadMedalNew.Visible
+            && QuadMedalNew.ImageUrl.Length > 0
+            && QuadMedalNew.ImageUrl != QuadMedalOld.ImageUrl
+        )
+        {
             DrawHugeMedal(QuadMedalNew.AbsolutePosition_V3, QuadMedalNew.AbsoluteScale, QuadMedalNew.ImageUrl);
         }
     }
 }
 
-void ReplaceMedalText(CGameManialinkLabel@ QuadLabel, const string &in imageURL){
+void ReplaceMedalText(CGameManialinkLabel@ QuadLabel, const string &in imageURL)
+{
     if (imageURL.Length == 0) return;
-    int checkCount = data.locations.ChecksGotten(loadedMap.seriesIndex,loadedMap.mapIndex);
-    if (checkCount >= 1){
-        ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 0)];
-        QuadLabel.Value = GetNthName(texI);
-    }else{
-        QuadLabel.Value = "...";
+
+    QuadLabel.Value = "...";
+
+    int checkCount = data.locations.ChecksGotten(loadedMap.seriesIndex, loadedMap.mapIndex);
+    if (checkCount >= 1)
+    {
+        ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 0)];
+        QuadLabel.Value = GetNthName(textureIndex);
     }
-    // if (imageURL.Contains("Bronze") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Bronze)){
-    //     QuadLabel.Value = GetNthName(loadedMap.itemTypes[4]);
-    // }else if (imageURL.Contains("Silver") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Silver)){
-    //     QuadLabel.Value = GetNthName(loadedMap.itemTypes[3]);
-    // }else if (imageURL.Contains("Gold") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Gold)){
-    //     QuadLabel.Value = GetNthName(loadedMap.itemTypes[2]);
-    // }else{
-    //     if (!data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Target)){
-    //         QuadLabel.Value = GetNthName(loadedMap.itemTypes[0]);
-    //     }else if (data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Author)){
-    //         QuadLabel.Value = GetNthName(loadedMap.itemTypes[1]);
-    //     }else{
-    //         QuadLabel.Value = "...";
-    //     }
-    // }
 }
 
-void DrawBigMedal(vec2 medalPos, float medalScale, const string &in imageURL){
+void DrawBigMedal(vec2 medalPos, float medalScale, const string &in imageURL)
+{
     const float w      = Math::Max(1, Display::GetWidth());
     const float h      = Math::Max(1, Display::GetHeight());
     const vec2  center = vec2(w * 0.5f, h * 0.5f);
     const float hUnit  = h / 180.0f;
     const vec2  scale  = vec2((w / h > stdRatio) ? hUnit : w / 320.0f, -hUnit);
     const vec2  size   = vec2(10.2f) * hUnit;
+
     const vec2 quadMedalOffset = vec2(-size.x, -size.y) * 2.0f * medalScale + vec2(16,16)*medalScale;
     const vec2 quadMedalCoords = center + quadMedalOffset + scale * medalPos;
     const vec2 quadMedalSize   = vec2(37.0f * hUnit * medalScale);
 
-    nvg::Texture@ tex = null;
+    nvg::Texture@ texture = null;
     if (imageURL.Length == 0) return;
 
-    int checkCount = data.locations.ChecksGotten(loadedMap.seriesIndex,loadedMap.mapIndex);
+    int checkCount = data.locations.ChecksGotten(loadedMap.seriesIndex, loadedMap.mapIndex);
     if (checkCount < 1) return;
-    ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 0)];
-    @tex = GetNthMedTex(texI);
-    // if (imageURL.Contains("Bronze") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Bronze)){
-    //     @tex = GetNthTex(loadedMap.itemTypes[4]);
-    // }else if (imageURL.Contains("Silver") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Silver)){
-    //     @tex = GetNthTex(loadedMap.itemTypes[3]);
-    // }else if (imageURL.Contains("Gold") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Gold)){
-    //     @tex = GetNthTex(loadedMap.itemTypes[2]);
-    // }else{
-    //     if (!data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Target)){
-    //         @tex = GetNthTex(loadedMap.itemTypes[0]);
-    //     }else if (data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Author)){
-    //         @tex = GetNthTex(loadedMap.itemTypes[1]);
-    //     }
-    // }
 
-    if (tex !is null){
+    ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 0)];
+    @texture = GetNthMedTex(textureIndex);
+
+    if (texture !is null)
+    {
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(quadMedalCoords, quadMedalSize, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(quadMedalCoords, quadMedalSize, 0.0f, texture, 1.0f));
         nvg::Fill();
     }
 }
 
-void DrawHugeMedal(vec2 medalPos, float medalScale, const string &in imageURL){
+void DrawHugeMedal(vec2 medalPos, float medalScale, const string &in imageURL)
+{
     const float w      = Math::Max(1, Display::GetWidth());
     const float h      = Math::Max(1, Display::GetHeight());
     const vec2  center = vec2(w * 0.5f, h * 0.5f);
     const float hUnit  = h / 180.0f;
     const vec2  scale  = vec2((w / h > stdRatio) ? hUnit : w / 320.0f, -hUnit);
     const vec2  size   = vec2(19.4f) * hUnit;
+
     const vec2 quadMedalOffset = vec2(-size.x, -size.y) * 1.15f;
     const vec2 quadMedalCoords = center + quadMedalOffset + scale * medalPos;
     const vec2 quadMedalSize   = vec2(45.0f * hUnit * medalScale);
 
-    nvg::Texture@ tex = null;
+    nvg::Texture@ texture = null;
     if (imageURL.Length == 0) return;
-    if (imageURL.Contains("Bronze") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Bronze)){
-        @tex = GetNthTex(loadedMap.itemTypes[4]);
-    }else if (imageURL.Contains("Silver") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Silver)){
-        @tex = GetNthTex(loadedMap.itemTypes[3]);
-    }else if (imageURL.Contains("Gold") && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Gold)){
-        @tex = GetNthTex(loadedMap.itemTypes[2]);
-    }else{
-        if (!data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Target)){
-            @tex = GetNthTex(loadedMap.itemTypes[0]);
-        }else if (data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex,loadedMap.mapIndex,CheckTypes::Author)){
-            @tex = GetNthTex(loadedMap.itemTypes[1]);
+
+    if (imageURL.Contains("Bronze") && data.locations.GotCheck(loadedMap.seriesIndex, loadedMap.mapIndex, CheckTypes::Bronze))
+    {
+        @texture = GetNthTex(loadedMap.itemTypes[4]);
+    }
+    else if (imageURL.Contains("Silver") && data.locations.GotCheck(loadedMap.seriesIndex, loadedMap.mapIndex, CheckTypes::Silver))
+    {
+        @texture = GetNthTex(loadedMap.itemTypes[3]);
+    }
+    else if (imageURL.Contains("Gold") && data.locations.GotCheck(loadedMap.seriesIndex, loadedMap.mapIndex, CheckTypes::Gold))
+    {
+        @texture = GetNthTex(loadedMap.itemTypes[2]);
+    }
+    else
+    {
+        if (!data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex, loadedMap.mapIndex, CheckTypes::Target))
+        {
+            @texture = GetNthTex(loadedMap.itemTypes[0]);
+        }
+        else if (data.settings.DoingAuthor() && data.locations.GotCheck(loadedMap.seriesIndex, loadedMap.mapIndex, CheckTypes::Author))
+        {
+            @texture = GetNthTex(loadedMap.itemTypes[1]);
         }
     }
 
-    if (tex !is null){
+    if (texture !is null)
+    {
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(quadMedalCoords, quadMedalSize, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(quadMedalCoords, quadMedalSize, 0.0f, texture, 1.0f));
         nvg::Fill();
     }
 }
 
-void DrawMedals(vec2 medalPos, PlaygroundPageType type){
+void DrawMedals(vec2 medalPos, PlaygroundPageType type)
+{
     const float w      = Math::Max(1, Display::GetWidth());
     const float h      = Math::Max(1, Display::GetHeight());
     const vec2  center = vec2(w * 0.5f, h * 0.5f);
     const float hUnit  = h / 180.0f;
     const vec2  scale  = vec2((w / h > stdRatio) ? hUnit : w / 320.0f, -hUnit);
+
     vec2 size, offset, coords;
+
     //smol size & offset
     size   = vec2(10.0f) * hUnit;
     offset = vec2(0.0f, -size.y * 0.5f);
 
-    int checkCount = data.locations.ChecksGotten(loadedMap.seriesIndex,loadedMap.mapIndex);
+    int checkCount = data.locations.ChecksGotten(loadedMap.seriesIndex, loadedMap.mapIndex);
 
     //smol 4
-    if (checkCount >= 5){
-        ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 4)];
-        nvg::Texture@ tex = GetNthSmolTex(texI);
+    if (checkCount >= 5)
+    {
+        ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 4)];
+        nvg::Texture@ texture = GetNthSmolTex(textureIndex);
+
         coords = center + offset + scale * (medalPos + vec2(-1.9f, 0.0f));
+
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, texture, 1.0f));
         nvg::Fill();
     }
 
     //smol 3
-    if (checkCount >= 4){
-        ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 3)];
-        nvg::Texture@ tex = GetNthSmolTex(texI);
+    if (checkCount >= 4)
+    {
+        ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 3)];
+        nvg::Texture@ texture = GetNthSmolTex(textureIndex);
+
         coords = center + offset + scale * (medalPos + vec2(0.5f, 0.0f));
+
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, texture, 1.0f));
         nvg::Fill();
     }
 
     //smol 2
-    if (checkCount >= 3){
-        ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 2)];
-        nvg::Texture@ tex = GetNthSmolTex(texI);
+    if (checkCount >= 3)
+    {
+        ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 2)];
+        nvg::Texture@ texture = GetNthSmolTex(textureIndex);
+
         coords = center + offset + scale * (medalPos + vec2(2.9f, 0.0f));
+
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, texture, 1.0f));
         nvg::Fill();
     }
 
     //smol 1
-    if (checkCount >= 2){
-        ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 1)];
-        nvg::Texture@ tex = GetNthSmolTex(texI);
+    if (checkCount >= 2)
+    {
+        ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 1)];
+        nvg::Texture@ texture = GetNthSmolTex(textureIndex);
+
         coords = center + offset + scale * (medalPos + vec2(5.3f, 0.0f));
+
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, texture, 1.0f));
         nvg::Fill();
     }
 
     //beeeg medal
-    if (checkCount >= 1){
-        ItemTypes texI = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex,loadedMap.mapIndex, 0)];
-        nvg::Texture@ tex = GetNthMedTex(texI);
+    if (checkCount >= 1)
+    {
+        ItemTypes textureIndex = loadedMap.itemTypes[data.locations.GetNthCheck(loadedMap.seriesIndex, loadedMap.mapIndex, 0)];
+        nvg::Texture@ texture = GetNthSmolTex(textureIndex);
+
         size   = vec2(16.0f) * hUnit;
         offset = vec2(0.0f, -size.y * 0.5f);
+
         coords = center + offset + scale * (medalPos + vec2(8.3f, 0.0f));
+
         nvg::BeginPath();
-        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, tex, 1.0f));
+        nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, texture, 1.0f));
         nvg::Fill();
-        //nvg::Text(coords + vec2(140,60),""+type);
     }
 
     //shadow 1
-    if (checkCount >= 1){
+    if (checkCount >= 1)
+    {
         size   = vec2(24.0f, 8.0f) * hUnit;
         offset = vec2(0.0f, -size.y * 0.5f);
         coords = center + offset + scale * (medalPos + vec2(3.85f, -11.5f));
+
         nvg::BeginPath();
         nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, shadowTexNVG, 0.55f));
         nvg::Fill();
     }
 
     //shadow 2
-    if (checkCount >= 2){
+    if (checkCount >= 2)
+    {
         size   = vec2(22.0f, 5.5f) * hUnit;
         offset = vec2(0.0f, -size.y * 0.5f);
         coords = center + offset + scale * (medalPos + vec2(-3.6f, -8.25f));
+
         nvg::BeginPath();
         nvg::FillPaint(nvg::TexturePattern(coords, size, 0.0f, shadowTexNVG, 0.55f));
         nvg::Fill();
     }
-}
-
-void Bla(){
-    nvg::BeginPath();
-    nvg::Text(vec2(400,400),"BLA");
 }
 
 #endif

@@ -1,114 +1,158 @@
-class WebSocket{
+class WebSocket
+{
+    Net::Socket@                socket;
+    WebsocketConnectionState    state;
 
-    Net::Socket@ socket;
-    string ip;
-    int port;
-    WebsocketConnectionState state;
-    array<string> messageQueue;
+    string          ip;
+    int             port;
+    array<string>   messageQueue;
     
     WebSocket(const string &in ip, int port){
-        this.ip = ip;
-        this.port = port;
         @socket = Net::Socket();
-        state = WebsocketConnectionState::Disconnected;
-        messageQueue = array<string>(10);//surely we dont need more than this
+        state   = WebsocketConnectionState::Disconnected;
+
+        this.ip         = ip;
+        this.port       = port;
+        messageQueue    = array<string>(10); // surely we dont need more than this
     }
 
-    void SetAddress(const string &in ip){
+    void SetAddress(const string &in ip)
+    {
         this.ip = ip;
     }
 
-    void OpenSocket(){
-        if (IS_DEV_MODE)print("Opening Socket");
+    void OpenSocket()
+    {
+        if (IS_DEV_MODE)
+        {
+            print("Opening Socket");
+        }
+
         state = WebsocketConnectionState::Handshaking;
         startnew(CoroutineFunc(Connect));
     }
 
-    private void Connect(){
-        try{
+    private void Connect()
+    {
+        try
+        {
             bool result = socket.Connect(ip,port);
-            if (result){
-                while (!socket.IsReady()){
+            if (result)
+            {
+                while (!socket.IsReady())
+                {
                     yield();
                 }
-                if (IS_DEV_MODE) print ("Sending Handshake");
+
+                if (IS_DEV_MODE)
+                {
+                    print ("Sending Handshake");
+                }
+
                 SocketHandshake();
                 startnew(CoroutineFunc(ReadLoop));
-            }else{
+            }
+            else
+            {
                 error("Error Opening Socket, Closing");
                 Close();
             }
-        } catch {
+        }
+        catch
+        {
             Log::Error("Error Opening Socket, IP likely invalid");
             Close();
         }
     }
 
-    void Close(){
+    void Close()
+    {
         socket.Close();
         state = WebsocketConnectionState::Disconnected;
     }
 
-    bool NotDisconnected(){
+    bool NotDisconnected()
+    {
         return state != WebsocketConnectionState::Disconnected;
     }
 
-    bool IsConnected(){
+    bool IsConnected()
+    {
         return state == WebsocketConnectionState::Connected;
     }
 
-    private void ReadLoop() {
-        while(NotDisconnected()){
-            if (state == WebsocketConnectionState::Handshaking){
+    private void ReadLoop()
+    {
+        while(NotDisconnected())
+        {
+            if (state == WebsocketConnectionState::Handshaking)
+            {
                 ReadStringMessage();
-            }else{
+            }
+            else
+            {
                 ReadPacketMessage();
-                // print (""+socket.Available());
-                // yield();
             }
         }
-        //its so jover
     }
 
-    private void ReadPacketMessage(){
-        while (socket.Available() < 1 && NotDisconnected()){
+    private void ReadPacketMessage()
+    {
+        while (socket.Available() < 1 && NotDisconnected())
+        {
             yield();
         }
-        if (!NotDisconnected()) return;
-        uint8 opcode = socket.ReadUint8();
-        bool validOpcode = CheckOpcode(opcode);
 
-        if (!validOpcode){
-            //this is a disconnect packet probably.
-            //lets just panic and disconnect regardless
-            //ok everyone ready? 3, 2, 1....
-            //AAAAAAAAALKSJDFKL:EJS:IF
+        if (!NotDisconnected()) return;
+
+        uint8 opcode        = socket.ReadUint8();
+        bool validOpcode    = CheckOpcode(opcode);
+
+        if (!validOpcode)
+        {
+            // this is a disconnect packet probably.
+            // lets just panic and disconnect regardless
+            // ok everyone ready? 3, 2, 1....
+            // AAAAAAAAALKSJDFKL:EJS:IF
             print("Invalid Opcode, Disconnecting. Opcode: " + opcode);
+
             Close();
             return;
         }
 
-        while (socket.Available() < 1 && NotDisconnected()){
+        while (socket.Available() < 1 && NotDisconnected())
+        {
             yield();
         }
-        if (!NotDisconnected()) return;
-        uint8 lengthAndMask = socket.ReadUint8();
-        uint64 length = lengthAndMask & 127;
-        bool mask = (lengthAndMask >> 7) == 1;
 
-        if (length == 126){
-            while (socket.Available() < 2 && NotDisconnected()){
+        if (!NotDisconnected()) return;
+
+        uint8 lengthAndMask = socket.ReadUint8();
+        uint64 length       = lengthAndMask & 127;
+        bool mask           = (lengthAndMask >> 7) == 1;
+
+        if (length == 126)
+        {
+            while (socket.Available() < 2 && NotDisconnected())
+            {
                 yield();
             }
+
             if (!NotDisconnected()) return;
+
             int left = socket.ReadUint8();
             int right = socket.ReadUint8();
             length = left << 8 | right;
-        }else if (length == 127){
-            while (socket.Available() < 8 && NotDisconnected()){
+        }
+        else if (length == 127)
+        {
+            while (socket.Available() < 8 && NotDisconnected())
+            {
                 yield();
             }
+
             if (!NotDisconnected()) return;
+
             uint64 part1 = socket.ReadUint8();
             uint64 part2 = socket.ReadUint8();
             uint64 part3 = socket.ReadUint8();
@@ -122,51 +166,70 @@ class WebSocket{
             //more crying
         }
 
-        if (mask){
+        if (mask)
+        {
             //we cry i dont wanna rn
-            int masks = socket.ReadUint32();
-            string msg = socket.ReadRaw(length);
+            int masks   = socket.ReadUint32();
+            string msg  = socket.ReadRaw(length);
+            ProcessMessage(msg);
             //tada problem gone
-        }else{
+        }
+        else
+        {
             string msg = socket.ReadRaw(length);
-            //PushMessage(msg);
             ProcessMessage(msg);
         }
-
     }
 
     string messsage;
-    private void ReadStringMessage(){
+    private void ReadStringMessage()
+    {
         string line;
-        while (!socket.ReadLine(line) && NotDisconnected()){
+        while (!socket.ReadLine(line) && NotDisconnected())
+        {
             yield();
         }
+
         if (!NotDisconnected()) return;
+
         line = line.Trim();
-        if (line.Length > 0){
+        if (line.Length > 0)
+        {
             messsage += line + "\r\n";
-        }else{
+        }
+        else
+        {
             ProcessHTTPMessage(messsage);
             messsage = "";
         }
     }
 
-    private void ProcessHTTPMessage(const string &in msg){
-        if (msg.Contains("Upgrade: websocket")){
-            if (IS_DEV_MODE) print("Hanshake Sucessful, Socket Fully Connected!");
+    private void ProcessHTTPMessage(const string &in msg)
+    {
+        if (msg.Contains("Upgrade: websocket"))
+        {
+            if (IS_DEV_MODE)
+            {
+                print("Hanshake Sucessful, Socket Fully Connected!");
+            }
+
             state = WebsocketConnectionState::Connected;
         }
     }
 
-    private bool CheckOpcode(uint8 opcode){
+    private bool CheckOpcode(uint8 opcode)
+    {
         int nullbits = opcode & 112;
         if (nullbits != 0) return false;
+
         uint8 op = opcode & 15;
         if (op != 0 && op != 1 && op != 2 && op != 8 && op != 9 && op != 10 ) return false;
+
         return true;
     }
 
-    private void SocketHandshake(){
+    private void SocketHandshake()
+    {
         //this works and it took me forever to get it working so we don't question it or touch it ever again okayge
         socket.WriteRaw("GET / HTTP/1.1\r\n");
         socket.WriteRaw("Host: localhost\r\n"); 
@@ -179,28 +242,37 @@ class WebSocket{
     }
 
     //i know this is technically a queue and not a stack but I like push and pop as names ^-^
-    private void PushMessage(const string &in message){
-        for (uint i = 0; i < messageQueue.Length; i++){
-            if (messageQueue[i].Length == 0){
+    private void PushMessage(const string &in message)
+    {
+        for (uint i = 0; i < messageQueue.Length; i++)
+        {
+            if (messageQueue[i].Length == 0)
+            {
                 messageQueue[i] = message;
                 return;
             }
         }
-        warn("More than "+messageQueue.Length +" queued messages, dropping!");
+
+        warn("More than " + messageQueue.Length + " queued messages, dropping!");
     }
 
-    string PopMessage(){
-        for (uint i = 0; i < messageQueue.Length; i++){
-            if (messageQueue[i].Length > 0){
+    string PopMessage()
+    {
+        for (uint i = 0; i < messageQueue.Length; i++)
+        {
+            if (messageQueue[i].Length > 0)
+            {
                 string result = messageQueue[i];
                 messageQueue[i] = "";
                 return result;
             }
         }
+
         return "";
     }
 
-    void SendWebsocketPacket(const string &in message){
+    void SendWebsocketPacket(const string &in message)
+    {
         //creates a packet that follows the websocket protocol
         //https://datatracker.ietf.org/doc/html/rfc6455#section-5.2
         array<uint8> masks = {Math::Rand(1,255),Math::Rand(1,255),Math::Rand(1,255),Math::Rand(1,255)};
@@ -238,18 +310,20 @@ class WebSocket{
  * These will be used in the TCPLink client to denote message types to the server
  *
  */
- enum WebsocketMessageTypes{
-	CODE_TEXT_FIN = 129,           // (10000001) - Text frame with FIN bit set (use this for single-fragment text messages)
-	CODE_CONTINUATION = 0,         // (00000000) - Continuation frame
-	CODE_PING = 137,               // (10001001) - Ping
-	CODE_PONG = 138,               // (10001010) - Pong
-	CODE_TEXT = 1,                 // (00000001) - Text frame (use CODE_CONTINUATION to continue a text message)
-    CODE_CONTINUATION_FIN = 128    // (10000000) - Continuation frame with FIN bit set (ends a multi-fragment message)
- }
+enum WebsocketMessageTypes
+{
+    CODE_CONTINUATION       = 0,     // (00000000) - Continuation frame
+    CODE_TEXT               = 1,     // (00000001) - Text frame (use CODE_CONTINUATION to continue a text message)
+    CODE_CONTINUATION_FIN   = 128,   // (10000000) - Continuation frame with FIN bit set (ends a multi-fragment message)
+    CODE_TEXT_FIN           = 129,   // (10000001) - Text frame with FIN bit set (use this for single-fragment text messages)
+    CODE_PING               = 137,   // (10001001) - Ping
+    CODE_PONG               = 138    // (10001010) - Pong
+}
 
- enum WebsocketConnectionState{
-	Handshaking = 0,
-	Connected = 1,
-	Disconecting = 2,
-	Disconnected = 3
- }
+enum WebsocketConnectionState 
+{
+    Handshaking = 0,
+    Connected = 1,
+    Disconecting = 2,
+    Disconnected = 3
+}

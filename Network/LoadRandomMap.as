@@ -63,17 +63,18 @@ namespace MX
 
 class RerollMapInfo
 {
-    int seriesIndex;
-    int mapIndex;
-    bool isPlaying;
+    int     seriesIndex;
+    int     mapIndex;
+    bool    isPlaying;
 }
 
 RerollMapInfo@ GetRerollMapInfo(int seriesIndex, int mapIndex, bool isPlaying = false)
 {
     RerollMapInfo@ info = RerollMapInfo();
-    info.seriesIndex = seriesIndex;
-    info.mapIndex = mapIndex;
-    info.isPlaying = isPlaying;
+
+    info.seriesIndex    = seriesIndex;
+    info.mapIndex       = mapIndex;
+    info.isPlaying      = isPlaying;
 
     return info;
 }
@@ -83,20 +84,23 @@ void RerollMapFromUI(int seriesIndex, int mapIndex, bool isPlaying = false)
     startnew(RerollMap, GetRerollMapInfo(seriesIndex, mapIndex, isPlaying));
 }
 
-void RerollMap(ref@ rerollMapInfo) {
+void RerollMap(ref@ rerollMapInfo)
+{
     RerollMapInfo@ info = cast<RerollMapInfo@>(rerollMapInfo);
     if (info is null) return;
 
     int seriesIndex = info.seriesIndex;
-    int mapIndex = info.mapIndex;
-    bool isPlaying = info.isPlaying;
+    int mapIndex    = info.mapIndex;
+    bool isPlaying  = info.isPlaying;
 
     if (seriesIndex < 0 || uint(seriesIndex) >= data.world.Length) return;
+
     if (mapIndex < 0 || uint(mapIndex) >= data.world[seriesIndex].maps.Length) return;
-    Log::Log("Rerolling Series " + (seriesIndex+1) + " Map " + (mapIndex+1) + ", one second please!", true);
+
+    Log::Log("Rerolling Series " + (seriesIndex + 1) + ", Map " + (mapIndex + 1) + ". One second please!", true);
     
-    MapState@ mapState = data.world[seriesIndex].maps[mapIndex];
-    SearchCriteria@ URLBuilder = data.world[seriesIndex].searchBuilder;
+    MapState@ mapState          = data.world[seriesIndex].maps[mapIndex];
+    SearchCriteria@ URLBuilder  = data.world[seriesIndex].searchBuilder;
 
 #if TMNEXT
     MapInfo@ mapRoll = QueryForRandomMap(URLBuilder);
@@ -104,7 +108,7 @@ void RerollMap(ref@ rerollMapInfo) {
     string previous_map_environments = URLBuilder.map_environments;
     if (isPlaying)
     {
-        Log::Log("Only current titlepack");
+        // When we're in a map already only search for the same environment / title pack
         URLBuilder.map_environments = CurrentTitlePack();
     }
 
@@ -117,44 +121,55 @@ void RerollMap(ref@ rerollMapInfo) {
     }
 #endif
 
-    if (mapRoll is null) {
+    if (mapRoll is null)
+    {
         Log::Error("Unable to reroll map", true);
         return;
     }
 
     mapState.ReplaceMap(mapRoll);
 
-    // Only start a new map if we're already playing a map
-    if (isPlaying) {
+    // Only start a new map if we're already playing one
+    if (isPlaying)
+    {
         startnew(LoadMap, mapRoll);
     }
 }
 
-void LoadMapByIndex(int seriesIndex, int mapIndex){
+void LoadMapByIndex(int seriesIndex, int mapIndex)
+{
     @loadedMap = data.GetMap(seriesIndex, mapIndex);
-    if (loadedMap !is null){
+
+    if (loadedMap !is null)
+    {
         MapInfo@ info = loadedMap.mapInfo;
+
         startnew(LoadMap,info);
     }
 }
 
-void LoadMap(ref@ mapData){
+void LoadMap(ref@ mapData)
+{
 #if TMNEXT
-    if (!Permissions::PlayLocalMap()){
+    if (!Permissions::PlayLocalMap())
+    {
         Log::Log("Club Access is required to use this plugin, sorry!", true);
         return;
     }
 #elif MP4
     CTrackMania@ app = cast<CTrackMania>(GetApp());
-    if (app is null || app.ManiaTitles.Length == 0) {
+    if (app is null || app.ManiaTitles.Length == 0)
+    {
         Log::Log("No title packs found. Are you in the stations menu yet?", true);
         return;
     }
 #endif
-    try {
+    try
+    {
         MapInfo@ map = cast<MapInfo@>(mapData);
 
-        if (map is null) {
+        if (map is null)
+        {
             warn ("Error, tried to load null map");
             return;
         }
@@ -177,10 +192,9 @@ void LoadMap(ref@ mapData){
 
         ClosePauseMenu();
         BackToMainMenu(); // If we're on a map, go back to the main menu else we'll get stuck on the current map
-        
-        auto app = cast<CTrackMania>(GetApp());
 
-        while(!app.ManiaTitleControlScriptAPI.IsReady) {
+        while(!app.ManiaTitleControlScriptAPI.IsReady)
+        {
             yield(); // Wait until the ManiaTitleControlScriptAPI is ready for loading the next map
         }
 
@@ -188,13 +202,14 @@ void LoadMap(ref@ mapData){
         MX::ModesFromMapType.Get(map.MapType, Mode);
 
 #if MP4
-        if (Mode == "") {
+        if (Mode == "")
+        {
             const string loadedTP = CurrentTitlePack();
             MX::ModesFromTitlePack.Get(loadedTP, Mode);
         }
 #endif
 
-        app.ManiaTitleControlScriptAPI.PlayMap("https://"+ MX_URL+"/mapgbx/"+map.MapId, Mode, "");
+        app.ManiaTitleControlScriptAPI.PlayMap("https://" + MX_URL + "/mapgbx/" + map.MapId, Mode, "");
 
         isNextMapLoading = false;
     }
@@ -205,57 +220,70 @@ void LoadMap(ref@ mapData){
     }
 }
 
-MapInfo@ QueryForRandomMap(SearchCriteria@ URLBuilder){
+MapInfo@ QueryForRandomMap(SearchCriteria@ URLBuilder)
+{
     if (!socket.NotDisconnected()) return null;
-    isQueryingForMap = true;
+
+    isQueryingForMap    = true;
+    bool reroll         = false;
+
     Json::Value@ res;
     Json::Value@ mapJson;
-    bool reroll = false;
 
     while (true)
     {
-        try {
-            string URL = URLBuilder.BuildQueryURL();
-            @res = API::GetAsync(URL)["Results"];
+        try
+        {
+            string URL  = URLBuilder.BuildQueryURL();
+            @res        = API::GetAsync(URL)["Results"];
         }
-        catch {
+        catch
+        {
             Log::Error("Could not reach TMX, it might be down...", true);
             break;
         }
 
         if (data is null) break;
 
-        if (res.GetType() != Json::Type::Array || res.Length == 0) {
-            if (URLBuilder.forceSafeURL) {
+        if (res.GetType() != Json::Type::Array || res.Length == 0)
+        {
+            if (URLBuilder.forceSafeURL)
+            {
                 Log::Error("Unable to find any maps!", true);
                 break;
             }
 
-            Log::Error("Search either returned no results or errored, entering safe mode and retrying...", true);
             URLBuilder.forceSafeURL = true;
+
+            Log::Error("Search either returned no results or errored, entering safe mode and retrying...", true);
             sleep(1000);
             continue;
         }
 
         @mapJson = res[0];
         Log::Trace("Next Map: " + Json::Write(mapJson));
-        if (!IsMapValid(mapJson)){
+        if (!IsMapValid(mapJson))
+        {
             Log::Warn("Map contains pre-patch physics, retrying...");
             sleep(1000);
             continue;
         }
 
         string mapUid = mapJson["MapUid"];
-        if (!reroll && data.previouslySeenMaps.Exists(mapUid)) {
-            Log::Warn("Map was previously rolled, retrying once...");
+        if (!reroll && data.previouslySeenMaps.Exists(mapUid))
+        {
             reroll = true;
+
+            Log::Warn("Map was previously rolled, retrying once...");
             sleep(1000);
             continue;
         }
+
         data.previouslySeenMaps.Set(mapUid, true);
 
         MapInfo@ map = MapInfo(mapJson);
-        if (map is null){
+        if (map is null)
+        {
             Log::Warn("Map is null, retrying...");
             sleep(1000);
             continue;
@@ -264,23 +292,35 @@ MapInfo@ QueryForRandomMap(SearchCriteria@ URLBuilder){
         isQueryingForMap = false;
         return map;
     }
+
     isQueryingForMap = false;
     return null;
 }
 
-bool IsMapValid(Json::Value@ mapJson){
+bool IsMapValid(Json::Value@ mapJson)
+{
     //automatically throw out pre-patch ice and bob and water
     //sorry, I want this to be accessible to new players and I don't want to make them deal with pre-patch
     //nando plz add physics versioning
 #if TMNEXT
     string exebuild = mapJson["Exebuild"];
-    for(uint i = 0; i < PHYSICS_PATCHES.Length; i++){
-        if (exebuild <= PHYSICS_PATCHES[i].exebuild){
-            for (uint j = 0; j < PHYSICS_PATCHES[i].tags.Length; j++){
-                for (uint k = 0; k < mapJson["Tags"].Length; k++){
-                    int physicsTagId = int(TMX_TAGS[PHYSICS_PATCHES[i].tags[j]]);
-                    int mapTagId = int(mapJson["Tags"][k]["TagId"]);
-                    if (physicsTagId == mapTagId){
+    auto mapTags    = mapJson["Tags"];
+
+    for(uint patchID = 0; patchID < PHYSICS_PATCHES.Length; patchID++)
+    {
+        auto patch = PHYSICS_PATCHES[patchID];
+
+        if (exebuild <= patch.exebuild)
+        {
+            for (uint tagIndex = 0; tagIndex < patch.tags.Length; tagIndex++)
+            {
+                for (uint mapTagIndex = 0; mapTagIndex < mapTags.Length; mapTagIndex++)
+                {
+                    int physicsTagId    = int(TMX_TAGS[patch.tags[tagIndex]]);
+                    int mapTagId        = int(mapTags[mapTagIndex]["TagId"]);
+
+                    if (physicsTagId == mapTagId)
+                    {
                         //is pre-patch!!
                         return false;
                     }

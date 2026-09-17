@@ -1,78 +1,102 @@
-class YamlSettings{
-    float targetTimeSetting;
-    float discountAmount;
-    int seriesCount;
-    bool bronzeDisabled;
-    bool silverDisabled;
-    bool goldDisabled;
-    bool authorDisabled;
+class YamlSettings
+{
+    float   targetTimeSetting;
+    float   discountAmount;
+    int     seriesCount;
+    bool    bronzeDisabled;
+    bool    silverDisabled;
+    bool    goldDisabled;
+    bool    authorDisabled;
 
-    YamlSettings() {
-        targetTimeSetting = 0.0;
-        seriesCount = 0;
+    YamlSettings()
+    {
+        targetTimeSetting   = 0.0;
+        seriesCount         = 0;
     }
 
-    YamlSettings(const Json::Value &in json, bool isSlot = false) {
-        try {
-            if (isSlot){
-                ReadSlotData(json);            
-            }else{
+    YamlSettings(const Json::Value &in json, bool isSlot = false)
+    {
+        try
+        {
+            if (isSlot)
+            {
+                ReadSlotData(json);
+            }
+            else
+            {
                 ReadJsonV1_2(json);
             }
-        } catch {
+        }
+        catch
+        {
             Log::Warn("Error parsing YamlSettings"+ "\nReason: " + getExceptionInfo());
         }
     }
 
-    bool DoingBronze(){
+    bool DoingBronze()
+    {
         return !bronzeDisabled;
     }
 
-    bool DoingSilver(){
+    bool DoingSilver()
+    {
         return targetTimeSetting >= 1 && !silverDisabled;
     }
 
-    bool DoingGold(){
+    bool DoingGold()
+    {
         return targetTimeSetting >= 2 && !goldDisabled;
     }
 
-    bool DoingAuthor(){
+    bool DoingAuthor()
+    {
         return targetTimeSetting >= 3 && !authorDisabled;
     }
 
-    Json::Value ToJson() {
+    Json::Value ToJson()
+    {
         Json::Value json = Json::Object();
-        try {
-            json["targetTimeSetting"] = targetTimeSetting;
-            json["discountAmount"] = discountAmount;
-            json["seriesCount"] = seriesCount;
-            json["bronzeDisabled"] = bronzeDisabled;
-            json["silverDisabled"] = silverDisabled;
-            json["goldDisabled"] = goldDisabled;
-            json["authorDisabled"] = authorDisabled;
-        } catch {
+
+        try
+        {
+            json["targetTimeSetting"]   = targetTimeSetting;
+            json["discountAmount"]      = discountAmount;
+            json["seriesCount"]         = seriesCount;
+
+            json["bronzeDisabled"]      = bronzeDisabled;
+            json["silverDisabled"]      = silverDisabled;
+            json["goldDisabled"]        = goldDisabled;
+            json["authorDisabled"]      = authorDisabled;
+        }
+        catch
+        {
             Log::Error("Error converting Yaml Settings to JSON");
         }
+
         return json;
     }
 
-    void ReadSlotData(const Json::Value &in json){
-        seriesCount = json["SeriesNumber"];
-        targetTimeSetting = json["TargetTimeSetting"];
-        discountAmount = json.Get("DiscountAmount",0.015);
-        bronzeDisabled = JsonGetAsBool(json, "DisableBronze");
-        silverDisabled = JsonGetAsBool(json, "DisableSilver");
-        goldDisabled = JsonGetAsBool(json, "DisableGold");
-        authorDisabled = JsonGetAsBool(json, "DisableAuthor");
+    void ReadSlotData(const Json::Value &in json)
+    {
+        seriesCount         = json["SeriesNumber"];
+        targetTimeSetting   = json["TargetTimeSetting"];
+        discountAmount      = json.Get("DiscountAmount", 0.015);
+
+        bronzeDisabled  = JsonGetAsBool(json, "DisableBronze");
+        silverDisabled  = JsonGetAsBool(json, "DisableSilver");
+        goldDisabled    = JsonGetAsBool(json, "DisableGold");
+        authorDisabled  = JsonGetAsBool(json, "DisableAuthor");
     }
 
-    void ReadJsonV1_2(const Json::Value &in json){
-        targetTimeSetting = json["targetTimeSetting"];
-        discountAmount = json["discountAmount"];
-        seriesCount = json["seriesCount"];
-        bronzeDisabled = JsonGetAsBool(json, "bronzeDisabled");
-        silverDisabled = JsonGetAsBool(json, "silverDisabled");
-        goldDisabled = JsonGetAsBool(json, "goldDisabled");
-        authorDisabled = JsonGetAsBool(json, "authorDisabled");
+    void ReadJsonV1_2(const Json::Value &in json)
+    {
+        targetTimeSetting   = json["targetTimeSetting"];
+        discountAmount      = json["discountAmount"];
+        seriesCount         = json["seriesCount"];
+
+        bronzeDisabled  = JsonGetAsBool(json, "bronzeDisabled");
+        silverDisabled  = JsonGetAsBool(json, "silverDisabled");
+        goldDisabled    = JsonGetAsBool(json, "goldDisabled");
+        authorDisabled  = JsonGetAsBool(json, "authorDisabled");
     }
 }

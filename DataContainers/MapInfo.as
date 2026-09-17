@@ -1,127 +1,150 @@
 
 class MapInfo
 {
-    int MapId;
-    string MapUid;
-    string OnlineMapId;
-    int UserId;
-    string Username;
-    string MapType;
-    string ExeBuild;
-    string UploadedAt;
-    string UpdatedAt;
-    int PlayedAt;
-    string Name;
-    string GbxMapName;
-    string TitlePack;
-    int AuthorTime;
-    int GoldTime;
-    int SilverTime;
-    int BronzeTime;
-    //int AwardCount;
-    int Length;
-    //bool ServerSizeExceeded;
-    array<MapTag@> Tags;
+    int             MapId;
+    string          MapUid;
+    string          OnlineMapId;
+    int             UserId;
+    string          Username;
+    string          MapType;
+    string          ExeBuild;
+    string          UploadedAt;
+    string          UpdatedAt;
+    int             PlayedAt;
+    string          Name;
+    string          GbxMapName;
+    string          TitlePack;
+    int             AuthorTime;
+    int             GoldTime;
+    int             SilverTime;
+    int             BronzeTime;
+    int             Length;
+    array<MapTag@>  Tags;
 
     MapInfo(const Json::Value &in json)
     {
-        try {
-            MapId = json["MapId"];
-            MapUid = json["MapUid"];
-            if (json["OnlineMapId"].GetType() != Json::Type::Null) OnlineMapId = json["OnlineMapId"];
-            Name = json["Name"];
-            MapType = json["MapType"];
-            ExeBuild = json["Exebuild"];
-            UploadedAt = json["UploadedAt"];
-            if (json["GbxMapName"].GetType() != Json::Type::Null) GbxMapName = json["GbxMapName"];
-            if (json["TitlePack"].GetType() != Json::Type::Null) TitlePack = json["TitlePack"];
-            //AwardCount = json["AwardCount"];
-            //ServerSizeExceeded = json["ServerSizeExceeded"];
+        try
+        {
+            MapId   = json["MapId"];
+            MapUid  = json["MapUid"];
+            
+            if (json["OnlineMapId"].GetType() != Json::Type::Null) 
+            {
+                OnlineMapId = json["OnlineMapId"];
+            }
 
-            if (json.HasKey("PlayedAt") && json["PlayedAt"].GetType() != Json::Type::Null) PlayedAt = json["PlayedAt"];
-            else PlayedAt = Time::Stamp;
+            Name        = json["Name"];
+            MapType     = json["MapType"];
+            ExeBuild    = json["Exebuild"];
+            UploadedAt  = json["UploadedAt"];
 
-            if (json["UpdatedAt"].GetType() != Json::Type::Null) {
+            if (json["GbxMapName"].GetType() != Json::Type::Null)
+            {
+                GbxMapName = json["GbxMapName"];
+            }
+
+            if (json["TitlePack"].GetType() != Json::Type::Null)
+            {
+                TitlePack = json["TitlePack"];
+            }
+
+            PlayedAt = Time::Stamp;
+            if (json.HasKey("PlayedAt") && json["PlayedAt"].GetType() != Json::Type::Null)
+            {
+                PlayedAt = json["PlayedAt"];
+            }
+
+            UpdatedAt = json["UploadedAt"];
+            if (json["UpdatedAt"].GetType() != Json::Type::Null)
+            {
                 UpdatedAt = json["UpdatedAt"];
-            } else {
-                UpdatedAt = json["UploadedAt"];
             }
 
-            if (json["Uploader"].GetType() != Json::Type::Null) {
-                UserId = json["Uploader"]["UserId"];
-                Username = json["Uploader"]["Name"];
+            if (json["Uploader"].GetType() != Json::Type::Null)
+            {
+                UserId      = json["Uploader"]["UserId"];
+                Username    = json["Uploader"]["Name"];
             }
 
-            if (json["Medals"].GetType() != Json::Type::Null) {
-                AuthorTime = json["Medals"]["Author"];
-                GoldTime = json["Medals"]["Gold"];
-                SilverTime = json["Medals"]["Silver"];
-                BronzeTime = json["Medals"]["Bronze"];
+            if (json["Medals"].GetType() != Json::Type::Null)
+            {
+                AuthorTime  = json["Medals"]["Author"];
+                GoldTime    = json["Medals"]["Gold"];
+                SilverTime  = json["Medals"]["Silver"];
+                BronzeTime  = json["Medals"]["Bronze"];
             }
 
-            if (json["Length"].GetType() != Json::Type::Null) {
+            Length = AuthorTime;
+            if (json["Length"].GetType() != Json::Type::Null)
+            {
                 Length = json["Length"];
-            } else {
-                Length = AuthorTime;
             }
 
             //Tags is an array of tag objects
-            if (json["Tags"].GetType() != Json::Type::Null) {
+            if (json["Tags"].GetType() != Json::Type::Null)
+            {
                 const Json::Value@ tagObjects = json["Tags"];
                 Tags = array<MapTag@>(tagObjects.Length);
 
-                for (uint i = 0; i < tagObjects.Length; i++) {
+                for (uint i = 0; i < tagObjects.Length; i++)
+                {
                     @Tags[i] = MapTag(tagObjects[i]);
                 }
             }
-        } catch {
+        }
+        catch
+        {
             Name = json["Name"];
-            Log::Error("Error parsing infos for the map: "+ Name + "\nReason: " + getExceptionInfo());
+
+            Log::Error("Error parsing infos for the map: " + Name + "\nReason: " + getExceptionInfo());
         }
     }
 
     Json::Value ToJson()
     {
         Json::Value json = Json::Object();
-        try {
-            json["MapId"] = MapId;
-            json["MapUid"] = MapUid;
+        try
+        {
+            json["MapId"]       = MapId;
+            json["MapUid"]      = MapUid;
             json["OnlineMapId"] = OnlineMapId;
-            json["Name"] = Name;
-            json["MapType"] = MapType;
-            json["Exebuild"] = ExeBuild;
-            json["UploadedAt"] = UploadedAt;
-            json["UpdatedAt"] = UpdatedAt;
-            json["PlayedAt"] = PlayedAt;
-            json["GbxMapName"] = GbxMapName;
-            json["TitlePack"] = TitlePack;
-            //json["AwardCount"] = AwardCount;
-            //json["ServerSizeExceeded"] = ServerSizeExceeded;
-            json["Length"] = Length;
+            json["Name"]        = Name;
+            json["MapType"]     = MapType;
+            json["Exebuild"]    = ExeBuild;
+            json["UploadedAt"]  = UploadedAt;
+            json["UpdatedAt"]   = UpdatedAt;
+            json["PlayedAt"]    = PlayedAt;
+            json["GbxMapName"]  = GbxMapName;
+            json["TitlePack"]   = TitlePack;
+            json["Length"]      = Length;
 
-            Json::Value uploaderObject = Json::Object();
-            uploaderObject["UserId"] = UserId;
-            uploaderObject["Name"] = Username;
+            Json::Value uploaderObject  = Json::Object();
+            uploaderObject["UserId"]    = UserId;
+            uploaderObject["Name"]      = Username;
 
             json["Uploader"] = uploaderObject;
 
-            Json::Value medalsObject = Json::Object();
-            medalsObject["Author"] = AuthorTime;
-            medalsObject["Gold"] = GoldTime;
-            medalsObject["Silver"] = SilverTime;
-            medalsObject["Bronze"] = BronzeTime;
+            Json::Value medalsObject    = Json::Object();
+            medalsObject["Author"]      = AuthorTime;
+            medalsObject["Gold"]        = GoldTime;
+            medalsObject["Silver"]      = SilverTime;
+            medalsObject["Bronze"]      = BronzeTime;
 
             json["Medals"] = medalsObject;
 
             Json::Value tagArray = Json::Array();
-            for (uint i = 0; i < Tags.Length; i++) {
+            for (uint i = 0; i < Tags.Length; i++)
+            {
                 tagArray.Add(Tags[i].ToJson());
             }
 
             json["Tags"] = tagArray;
-        } catch {
-            Log::Error("Error converting map info to JSON for map "+Name);
         }
+        catch
+        {
+            Log::Error("Error converting map info to JSON for map: " + Name);
+        }
+
         return json;
     }
 }
