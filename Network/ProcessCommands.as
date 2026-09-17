@@ -163,7 +163,7 @@ void ProcessResync()
     SendLocationChecks(allChecks, total);
 }
 
-void ProcessPrintJson (Json::Value@ json)
+void ProcessPrintJson(Json::Value@ json)
 {
     //¯\_(ツ)_/¯
     Json::Value@ jsonData = json["data"];
@@ -186,14 +186,14 @@ void ProcessPrintJson (Json::Value@ json)
     }
 }
 
-void ProcessConnectionRefused (Json::Value@ json)
+void ProcessConnectionRefused(Json::Value@ json)
 {
     seedNameCache = "";
     Log::Error("Server Refused Connection, closing...", true);
     socket.Close();
 }
 
-void ProcessReceivedItems (Json::Value@ json)
+void ProcessReceivedItems(Json::Value@ json)
 {
     if (data is null) return;
 
@@ -231,7 +231,7 @@ void ProcessReceivedItems (Json::Value@ json)
     data.InitializeUpcomingSeries();
 }
 
-void ProcessLocationInfo (Json::Value@ json)
+void ProcessLocationInfo(Json::Value@ json)
 {
     auto locations = json["locations"];
 
@@ -272,22 +272,22 @@ void ProcessLocationInfo (Json::Value@ json)
     }
 }
 
-void ProcessBounced (Json::Value@ json)
+void ProcessBounced(Json::Value@ json)
 {
     // if we ever add deathlink it will be added here
 }
 
-void ProcessRetrieved (Json::Value@ json)
+void ProcessRetrieved(Json::Value@ json)
 {
     // a response to a get command, which we arent using so this should never happen! ^-^
 }
 
-void ProcessRoomUpdate (Json::Value@ json)
+void ProcessRoomUpdate(Json::Value@ json)
 {
     CheckLocations(json);
 }
 
-void ProcessReroll (Json::Value@ json)
+void ProcessReroll(Json::Value@ json)
 {
     RerollMapInfo@ rerollMapInfo;
 

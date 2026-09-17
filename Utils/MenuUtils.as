@@ -192,7 +192,7 @@ bool LoadTitlePack(const string &in titlepack)
     yield();
     sleep(100);
 
-    UI::ShowNotification("Loading title pack...", title.TitleId);
+    UI::ShowNotification("Loading title pack...", GetEnvironmentFromTitlePack(titlepack));
     app.ManiaPlanetScriptAPI.EnterTitle(title.TitleId);
 
     yield();

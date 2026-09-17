@@ -81,7 +81,7 @@ class Items
         }
     }
 
-    void AddItem (int itemID, int itemCount = 1)
+    void AddItem(int itemID, int itemCount = 1)
     {
         switch (itemID)
         {

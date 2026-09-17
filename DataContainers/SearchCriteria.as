@@ -125,11 +125,13 @@ class SearchCriteria
         dictionary params;
 
         // Always present parameters -- either required setup, or ensuring we get compatible maps
-        params.Set("fields", MAP_FIELDS); //fields that the API will return in the json object
+        params.Set("fields", MAP_FIELDS); // fields that the API will return in the json object
         params.Set("random", "1");
         params.Set("count", "1");
         params.Set("maptype", SUPPORTED_MAP_TYPE);
-#if MP4
+#if TMNEXT
+        params.Set("vehicle", "1,2,3,4"); // Currently supported vehicles for TM2020
+#elif MP4
         auto titlePacks = GetInstalledTitlePacks(this.map_environments.Split(","));
         if (titlePacks.Length == 0)
         {
