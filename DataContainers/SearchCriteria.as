@@ -139,8 +139,7 @@ class SearchCriteria
             titlePacks = GetInstalledTitlePacks(TITLEPACKS);
         }
 
-        string titlepack = titlePacks[Math::Rand(0, titlePacks.Length)];
-        params.Set("titlepack", titlepack);
+        params.Set("titlepack", Text::Join(titlePacks, ","));
 #endif
 
         // Base tag search -- always present, even in safe mode
@@ -202,11 +201,6 @@ class SearchCriteria
             // Only use default etags and max time, and no other custom search parameters
             params.Set("etag", ETAGS);
             params.Set("authortimemax", tostring(MAX_AUTHOR_TIME));
-
-#if MP4
-            // Allow all installed titlepacks in the search
-            params.Set("titlepack", Text::Join(titlePacks, ','));
-#endif
         }
 
         string urlParams = DictToApiParams(params);

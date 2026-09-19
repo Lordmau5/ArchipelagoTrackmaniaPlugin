@@ -20,14 +20,14 @@ bool IsCurrentTitlepackCompatible(const string &in titlePack)
     }
 
     if (
-        (loadedTitlePack == 'TMAll' || loadedTitlePack == 'TMPlus' || loadedTitlePack == 'Nadeo_Envimix')
+        (loadedTitlePack == "TMAll" || loadedTitlePack == "TMPlus" || loadedTitlePack == "Nadeo_Envimix")
         && BaseTitlePacks.Find(loadedTitlePack) > -1
     )
     {
         return true;
     }
 
-    if (loadedTitlePack.StartsWith('TMAll') && titlePack.StartsWith('TMAll'))
+    if (loadedTitlePack.StartsWith("TMAll") && titlePack.StartsWith("TMAll"))
     {
         // Covers TMAll with TMAllMaker
         return true;
