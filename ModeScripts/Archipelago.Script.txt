@@ -1,0 +1,46 @@
+#Extends "Modes/TrackMania/SingleMap.Script.txt"
+
+#Include "Modes/TrackMania/Libs/Archipelago/Effects.Script.txt" as AP
+
+#Setting S_ScriptEnvironment "development"
+
+***StartMatch***
+***
+ClientManiaAppUrl = "Scripts/ManiaApps/Nadeo/AppBase.Script.txt";
+// EnableBonusEvents = True;
+// EnableScaleCar = True;
+// EnableCheckpointBonus = True;
+UiDisplayStuntsNames = True;
+***
+
+***StartMap***
+***
+declare CUILayer G_AP_DebugLayer;
+if (G_AP_DebugLayer != Null) UIManager.UILayerDestroy(G_AP_DebugLayer);
+G_AP_DebugLayer <=> UIManager.UILayerCreate();
+UIManager.UIAll.UILayers.add(G_AP_DebugLayer);
+G_AP_DebugLayer.ManialinkPage = """
+<manialink version="3">
+  <label id="AP_Debug" pos="-155 85" z-index="100" textsize="2" textcolor="ff0"/>
+  <script><!--
+main() {
+    declare CMlLabel Label <=> (Page.GetFirstChild("AP_Debug") as CMlLabel);
+    while (True) {
+        yield;
+        if (GUIPlayer == Null) continue;
+        Label.SetText("Control: " ^ GUIPlayer.ControlCoef
+            ^ "\nGravity: " ^ GUIPlayer.GravityCoef
+            ^ "\nInputSteer: " ^ GUIPlayer.InputSteer
+            ^ "\nAccel: " ^ GUIPlayer.AccelCoef);
+    }
+}
+  --></script>
+</manialink>
+""";
+G_AP_DebugLayer.IsVisible = True;
+***
+
+***Yield***
+***
+AP::DispatchEffect();
+***

@@ -29,6 +29,18 @@ void RenderConnectUI()
 
         if (!socket.NotDisconnected())
         {
+            // DEBUG REMOVE BEFORE COMMITING
+            if (UI::ButtonColored("Play test map", 0.33))
+            {
+                app.ManiaTitleControlScriptAPI.PlayMap("C:/Users/apier/OneDrive/Documents/ManiaPlanet/Maps/My Maps/test.Map.Gbx", "TrackMania/Archipelago", "");
+            }
+
+            if (UI::ButtonColored("Launch custom effect", 0.33))
+            {
+                Effects::SendCustomEvent("AP.Effect", {"test", "2"});
+            }
+
+            // REAL CODE
             if (UI::ButtonColored(	Icons::Kenney::SignIn + " Connect to Archipelago Client!", 0.33))
             {
                 StartConnection();

@@ -76,6 +76,11 @@ void Update(float deltaTime)
     {
         CelebrationUpdate(deltaTime);
     }
+
+    if (GetIsOnMap())
+    {
+        Effects::TimedEffectsLoop();
+    }
 }
 
 void StartConnection()

@@ -1,0 +1,42 @@
+#Const C_AP_EventType "AP.Effect"
+
+#Const C_AP_Trap_LowGravity "LowGravity"
+
+Void ApplyEffect(Text EffectId, Text[] Args) {
+	foreach (_Player in AllPlayers) {
+		switch(EffectId) {
+			case C_AP_Trap_LowGravity: {
+				if (Args.count >= 1) {
+					if (Args[0] == "on") {
+						_Player.GravityCoef = 0.5;
+					} else if (Args[0] == "off") {
+						_Player.GravityCoef = 1.0;
+					}
+				}
+			}
+			// TODO: does not work
+			// case C_AP_Trap_BadControl: {
+			// 	_Player.ControlCoef = 0.1;
+			// }
+			// case C_AP_Trap_AccelPenalty: {
+			// 	_Player.AccelCoef = 0.1;
+			// }
+		}
+		
+	}
+}
+
+Void DispatchEffect() {
+	foreach (Event in UIManager.PendingEvents) {
+		if (Event.Type == CUIConfigEvent::EType::OnLayerCustomEvent) {
+			if (Event.CustomEventType == C_AP_EventType) {
+				declare Text EffectId = Event.CustomEventData[0];
+				declare Text[] Args;
+				for (i, 1, Event.CustomEventData.count - 1) {
+					Args.add(Event.CustomEventData[i]);
+				}
+				ApplyEffect(EffectId, Args);
+			}
+		}
+	}
+}
